@@ -1,0 +1,15 @@
+<service>
+    <serviceName>retos</serviceName>
+    <serviceAliases>
+        <alias>reto</alias>
+    </serviceAliases>
+    <serviceDescription>Retos de Apretaste</serviceDescription>
+    <creatorEmail>kumahavana@gmail.com</creatorEmail>
+    <serviceCategory>ocio</serviceCategory>
+    <serviceUsage>
+        <![CDATA[
+			Para utilizar este servicio debe enviar un correo a Apretaste y en el asunto escribir
+			RETOS
+		]]>
+    </serviceUsage>
+</service>
