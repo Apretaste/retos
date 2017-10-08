@@ -284,6 +284,7 @@ class Retos extends Service
 
 		// checking each goal
 		$last_section = false;
+		$no_more = false;
 		foreach($this->goals as $s => $section)
 		{
 			$this->goals[ $s ]['total']          = count($section['goals']);
@@ -291,6 +292,8 @@ class Retos extends Service
 			$this->goals[ $s ]['visible']        = false;
 			$all_complete                        = true;
 
+			if ($no_more) continue;
+			
 			$verify = true;
 			if(isset($section['checker']))
 			{
@@ -341,7 +344,8 @@ class Retos extends Service
 			{
 				// show first section not completed
 				$this->goals[ $s ]['visible'] = true;
-				break;
+				$no_more = true;
+				continue;
 			}
 			$last_section = $s;
 		}
