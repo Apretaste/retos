@@ -2,7 +2,7 @@
     {if $section['visible']}
         {if $section['complete'] == false}
             <h1>{$section['title']} {number_format($section['complete_count']/$section['total']*100,0)}%</h1>
-            <p>Completa los siguientes <b>{$section['total']}</b> retos y gana cr&eacute;dito personal. Ya has completado <b>{$section['complete_count']}</b></p>
+            <p>Completa los siguientes <b>{$section['total']}</b> retos y gana cr&eacute;dito personal. {if $section['complete_count'] > 0}Ya has completado <b>{$section['complete_count']} {else} No has completado ninguno todav&iacute;a.{/if}</b></p>
             <table width="100%" cellspacing="0">
                 {foreach item=goal from=$section['goals']}
                 <tr {if $goal@iteration is even} bgcolor="#F2F2F2" {/if}>
