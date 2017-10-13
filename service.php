@@ -10,7 +10,15 @@
 class Retos extends Service
 {
 	public $goals = [];
+	public $now = null; // using "unique now" during the execution of the sevice
+	public $big_ban = '2000-01-01 00:00:00';
 	private $connection = null;
+
+	public function __construct()
+	{
+		$this->now = date("Y-m-d h:i:s");
+		//parent::__construct();
+	}
 
 	/**
 	 * Singleton connection to db
@@ -71,25 +79,46 @@ class Retos extends Service
 	 */
 	public function initGoals($request)
 	{
+
 		$this->goals = [
 			'initial' => [
 				'title' => 'Retos iniciales',
 				'prize' => 2,
+				'filter_unique' => "email = '{$request->email}' AND goal = '{$this->big_ban}'",
+				'get_last' => function($request)
+				{
+					$bad_status = str_repeat('0', count($this->goals['initial']['goals']));
+					$r          = $this->q("SELECT *, length(replace(status, '0', '')) AS completed FROM _retos WHERE {$this->goals['initial']['filter_unique']}");
+					if(isset($r[0])) return $r[0];
+
+					$this->q("INSERT INTO _retos (email, `type`, goal, prize, status) VALUES ('{$request->email}', 'initial', '{$this->big_ban}', 0, '$bad_status');");
+
+					$r            = new stdClass();
+					$r->email     = $request->email;
+					$r->completed = 0;
+					$r->goal      = $this->big_ban;
+					$r->prize     = 0;
+					$r->status    = $bad_status;
+
+					return $r;
+				},
 				'checker' => function($request)
 				{
-					$r = $this->q("SELECT count(*) as total FROM _retos WHERE email = '{$request->email}';");
-
-					return intval($r[0]->total) > 0;
+					return $this->goals['initial']['get_last']($request)->completed == count($this->goals['initial']['goals']);
+				},
+				'update_status' => function()
+				{
+					$this->q("UPDATE _retos SET status = '{$this->goals['initial']['status']}' WHERE {$this->goals['initial']['filter_unique']}");
 				},
 				'goals' => [
-					[
+					0 => [
 						'caption' => 'Leer los [Terminos] del servicio',
 						'checker' => [
 							'type' => 'count',
 							'data' => "SELECT count(*) as total FROM utilization WHERE requestor = '{$request->email}' AND service = 'terminos'"
 						]
 					],
-					[
+					1 => [
 						'caption' => 'Completar su [perfil] de usuario y poner foto',
 						'checker' => [
 							'type' => 'callable',
@@ -99,28 +128,28 @@ class Retos extends Service
 							}
 						]
 					],
-					[
+					2 => [
 						'caption' => 'Leer las maneras de ganar [credito]',
 						'checker' => [
 							'type' => 'count',
 							'data' => "SELECT count(*) as total FROM utilization WHERE requestor = '{$request->email}' AND service = 'web' AND query = 'credito.apretaste.com'"
 						]
 					],
-					[
+					3 => [
 						'caption' => 'Abrir el [Soporte] por primera vez',
 						'checker' => [
 							'type' => 'count',
 							'data' => "SELECT count(*) as total FROM utilization WHERE requestor = '{$request->email}' AND service = 'soporte'"
 						]
 					],
-					[
+					4 => [
 						'caption' => '[Referir] a un amigo y ganar creditos',
 						'checker' => [
 							'type' => 'count',
 							'data' => "SELECT count(*) as total FROM _referir WHERE user = '{$request->email}'"
 						]
 					],
-					[
+					5 => [
 						'caption' => 'Responder una [Encuesta] y ganar creditos',
 						'checker' => [
 							'type' => 'count',
@@ -134,35 +163,35 @@ class Retos extends Service
 									  ) E WHERE unanswered <= 0;"
 						]
 					],
-					[
+					6 => [
 						'caption' => 'Ver la lista de [Concursos] abiertos',
 						'checker' => [
 							'type' => 'count',
 							'data' => "SELECT count(*) as total FROM utilization WHERE requestor = '{$request->email}' AND service = 'concurso'"
 						]
 					],
-					[
+					7 => [
 						'caption' => 'Revisar las notas en la [Pizarra]',
 						'checker' => [
 							'type' => 'count',
 							'data' => "SELECT count(*) as total FROM utilization WHERE requestor = '{$request->email}' AND service = 'pizarra'"
 						]
 					],
-					[
+					8 => [
 						'caption' => 'Escribir o votar por una [Sugerencia]',
 						'checker' => [
 							'type' => 'count',
 							'data' => "SELECT count(*) as total FROM utilization WHERE requestor = '{$request->email}' AND service = 'sugerencias' AND (subservice = 'crear' OR subservice = 'votar')"
 						]
 					],
-					[
+					9 => [
 						'caption' => 'Comprar un ticket para la [Rifa]',
 						'checker' => [
 							'type' => 'count',
 							'data' => "SELECT count(*) as total FROM ticket WHERE email = '{$request->email}' AND origin = 'PURCHASE'"
 						]
 					],
-					[
+					10 => [
 						'caption' => 'Revisar los articulos de la [Tienda]',
 						'checker' => [
 							'type' => 'count',
@@ -172,17 +201,18 @@ class Retos extends Service
 				],
 				'completion' => function(Request $request)
 				{
-					$r = $this->q("SELECT count(*) as total FROM _retos WHERE email = '{$request->email}';");
-					if(intval($r[0]->total) == 0)
+					$prize = $this->goals['initial']['prize'];
+
+					if($this->goals['initial']['checker']($request) == false)
 					{
 						// increase credit
 						$this->q("UPDATE person SET credit = credit + 2 WHERE email = '{$request->email}';");
 
-						// track the event
-						$this->q("INSERT INTO _retos (email, goal, prize) VALUES ('{$request->email}', '2000-01-01 00:00:00', 2);");
+						// update prize
+						$this->q("UPDATE _retos SET prize = $prize WHERE {$this->goals['initial']['filter_unique']}");
 
 						// send notification
-						$text = 'Usted completo los retos iniciales y gano &sect;2.00, ahora le ofreceremos retos cada semana';
+						$text = 'Usted complet&oacute; los retos iniciales y gano &sect;2.00, ahora le ofreceremos retos cada semana';
 						$this->utils->addNotification($request->email, 'RETOS', $text);
 					}
 				},
@@ -191,56 +221,76 @@ class Retos extends Service
 			'weekly' => [
 				'title' => 'Retos semanales',
 				'prize' => 1,
+				'filter_unique' => "email = '{$request->email}'  AND week('{$this->now}') = week(goal) AND year(goal) = year('{$this->now}')",
+				'get_last' => function($request)
+				{
+					$bad_status = str_repeat('0', count($this->goals['weekly']['goals']));
+
+					$r = $this->q("SELECT *, length(replace(status, '0', '')) AS completed FROM _retos WHERE {$this->goals['weekly']['filter_unique']}");
+					if(isset($r[0])) return $r[0];
+
+					$this->q("INSERT INTO _retos (email, `type`, goal, prize, status) VALUES ('{$request->email}', 'weekly', '{$this->now}', 0, '$bad_status');");
+
+					$r            = new stdClass();
+					$r->email     = $request->email;
+					$r->completed = 0;
+					$r->goal      = $this->now;
+					$r->prize     = 0;
+					$r->status    = $bad_status;
+
+					return $r;
+				},
 				'checker' => function($request)
 				{
-					$r = $this->q("SELECT count(*) as total FROM _retos WHERE email = '{$request->email}'  AND week(now()) = week(goal) AND year(goal) = year(now())");
-
-					return intval($r[0]->total) > 0;
-
+					return $this->goals['weekly']['get_last']($request)->completed == count($this->goals['weekly']['goals']);
+				},
+				'update_status' => function($request)
+				{
+					$this->q("UPDATE _retos SET status = '{$this->goals['initial']['status']}' WHERE {$this->goals['weekly']['filter_unique']}");
 				},
 				'goals' => [
-					[
+					0 => [
 						'caption' => 'Usar la [app] los siete d&iacute;as de la semana (X/7)',
 						'checker' => [
 							'type' => 'count',
-							'data' => "SELECT count(*) as total FROM delivery_received WHERE webhook = 'app' AND user = '{$request->email}' AND week(now()) = week(inserted) AND year(inserted) = year(now())",
+							'data' => "SELECT count(*) as total FROM delivery_received WHERE webhook = 'app' AND user = '{$request->email}' AND week('{$this->now}') = week(inserted) AND year(inserted) = year('{$this->now}')",
 							'cmp' => function($value)
 							{
 								return $value == 7;
 							}
 						]
 					],
-					[
+					1 => [
 						'caption' => 'Escribir o votar por una [Sugerencia]',
 						'link' => "SUGERENCIAS",
 						'checker' => [
 							'type' => 'count',
-							'data' => "SELECT count(*) as total FROM utilization WHERE requestor = '{$request->email}' AND service = 'sugerencias' AND (subservice = 'crear' OR subservice = 'votar') AND week(now()) = week(request_time) AND year(request_time) = year(now())"
+							'data' => "SELECT count(*) as total FROM utilization WHERE requestor = '{$request->email}' AND service = 'sugerencias' AND (subservice = 'crear' OR subservice = 'votar') AND week('{$this->now}') = week(request_time) AND year(request_time) = year('{$this->now}')"
 						]
 					],
-					[
+					2 => [
 						'caption' => 'Referir un amigo a usar la app',
 						'link' => 'REFERIR @amigo',
 						'checker' => [
 							'type' => 'count',
-							'data' => "SELECT count(*) as total FROM _referir WHERE user = '{$request->email}' AND week(now()) = week(inserted) AND year(inserted) = year(now())"
+							'data' => "SELECT count(*) as total FROM _referir WHERE user = '{$request->email}' AND week('{$this->now}') = week(inserted) AND year(inserted) = year('{$this->now}')"
 						]
 					],
-					[
+					3 => [
 						'caption' => 'Escribir una nota publica en la [Pizarra]',
 						'checker' => [
 							'type' => 'count',
-							'data' => "SELECT count(*) as total FROM _pizarra_notes WHERE email = '{$request->email}' AND week(now()) = week(inserted) AND year(inserted) = year(now())"
+							'data' => "SELECT count(*) as total FROM _pizarra_notes WHERE email = '{$request->email}' AND week('{$this->now}') = week(inserted) AND year(inserted) = year('{$this->now}')"
 						]
 					],
-					[
-						'caption' => 'Enviar una nota privada a otro usuario',
+					4 => [
+						'caption' => 'Enviar una [nota] privada a otro usuario',
 						'checker' => [
 							'type' => 'count',
-							'data' => "SELECT count(*) as total FROM _note WHERE from_user = '{$request->email}' AND week(now()) = week(send_date) AND year(send_date) = year(now())"
+							'data' => "SELECT count(*) as total FROM _note WHERE from_user = '{$request->email}' AND week('{$this->now}') = week(send_date) AND year(send_date) = year('{$this->now}')"
 						]
 					],
-					[
+					5 => [
 						'caption' => 'Contestar una [encuesta] y ganar creditos',
 						'checker' => [
 							'type' => 'count',
@@ -248,33 +298,34 @@ class Retos extends Service
 										  SELECT id, questions, answers, questions - answers as unanswered
 										  FROM ( SELECT id,
 										           (SELECT COUNT(C.id) as total FROM _survey_question C WHERE survey = A.id) as questions,
-										           (SELECT COUNT(D.answer) as answers FROM _survey_answer_choosen D WHERE survey = A.id AND email = '{$request->email}' AND week(now()) = week(date_choosen) AND year(date_choosen) = year(now())) as answers
+										           (SELECT COUNT(D.answer) as answers FROM _survey_answer_choosen D WHERE survey = A.id AND email = '{$request->email}' AND week('{$this->now}') = week(date_choosen) AND year(date_choosen) = year('{$this->now}')) as answers
 										         FROM _survey A WHERE active = 1) B
 										  WHERE questions > 0 AND questions - answers <= 0
 									  ) E WHERE unanswered <= 0;"
 						]
 					],
-					[
+					6 => [
 						'caption' => 'Comprar tickets para la [Rifa]',
 						[
 							'type' => 'count',
-							'data' => "SELECT count(*) as total FROM ticket WHERE email = '{$request->email}' AND origin = 'PURCHASE' AND week(now()) = week(creation_time) AND year(creation_time) = year(now())"
+							'data' => "SELECT count(*) as total FROM ticket WHERE email = '{$request->email}' AND origin = 'PURCHASE' AND week('{$this->now}') = week(creation_time) AND year(creation_time) = year('{$this->now}')"
 						]
 					]
 				],
 				'completion' => function(Request $request)
 				{
-					$r = $this->q("SELECT count(*) as total FROM _retos WHERE email = '{$request->email}'  AND week(now()) = week(goal) AND year(goal) = year(now())");
-					if(intval($r[0]->total) == 0)
+					$prize = $this->goals['weekly']['prize'];
+
+					if($this->goals['weekly']['checker']($request) == false)
 					{
 						// increase credit
-						$this->q("UPDATE person SET credit = credit + 1 WHERE email = '{$request->email}';");
+						$this->q("UPDATE person SET credit = credit + $prize WHERE email = '{$request->email}';");
 
-						// track the event
-						$this->q("INSERT INTO _retos (email, goal, prize) VALUES ('{$request->email}', now(), 1);");
+						// update prize
+						$this->q("UPDATE _retos SET prize = $prize WHERE {$this->goals['weekly']['filter_unique']}");
 
 						// send notification
-						$text = 'Usted completo los retos de la semana y gan&oacute; &sect;1.00. Vuelva con el mismo entusiasmo la semana pr&oacute;xima.';
+						$text = 'Usted complet&oacute; los retos de la semana y gan&oacute; &sect;' . number_format($prize, 2) . '. Vuelva con el mismo entusiasmo la semana pr&oacute;xima.';
 						$this->utils->addNotification($request->email, 'RETOS', $text);
 					}
 				},
@@ -284,21 +335,21 @@ class Retos extends Service
 
 		// checking each goal
 		$last_section = false;
-		$no_more = false;
+		$no_more      = false;
 		foreach($this->goals as $s => $section)
 		{
 			$this->goals[ $s ]['total']          = count($section['goals']);
 			$this->goals[ $s ]['complete_count'] = 0;
 			$this->goals[ $s ]['visible']        = false;
+			$this->goals[ $s ]['status']         = $this->goals[ $s ]['get_last']($request)->status;
 			$all_complete                        = true;
 
-			if ($no_more) continue;
-			
+			if($no_more) continue;
+
 			$verify = true;
 			if(isset($section['checker']))
 			{
-				$call = $section['checker'];
-				$r    = $call($request);
+				$r = $section['checker']($request);
 				if($r == true) $verify = false;
 			}
 
@@ -319,18 +370,32 @@ class Retos extends Service
 					else
 						$this->goals[ $s ]['goals'][ $g ]['link'] = false;
 				}
+
+				$this->goals[ $s ]['goals'][ $g ]['caption'] = str_replace([
+					'[',
+					']'
+				], '', $this->goals[ $s ]['goals'][ $g ]['caption']);
 			}
 
 			// checkers
 			if($verify) foreach($section['goals'] as $g => $goal)
 			{
-				$complete                                     = $this->checkGoal($goal, $request);
+				$complete = true;
+				if($this->goals[ $s ]['status'][ $g ] == '0') // check only not completed goals
+				{
+					$complete                          = $this->checkGoal($goal, $request);
+					$this->goals[ $s ]['status'][ $g ] = $complete ? 1 : 0;
+				}
+
 				$all_complete                                 = $all_complete && $complete;
 				$this->goals[ $s ]['goals'][ $g ]['complete'] = $complete;
 				$this->goals[ $s ]['complete_count']          += $complete ? 1 : 0;
 			}
 
 			$this->goals[ $s ]['complete'] = $all_complete;
+
+			// save status
+			$this->q("UPDATE _retos SET status = '{$this->goals[$s]['status']}' WHERE {$this->goals[$s]['filter_unique']}");
 
 			if($all_complete)
 			{
@@ -344,7 +409,7 @@ class Retos extends Service
 			{
 				// show first section not completed
 				$this->goals[ $s ]['visible'] = true;
-				$no_more = true;
+				$no_more                      = true;
 				continue;
 			}
 			$last_section = $s;
