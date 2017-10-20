@@ -115,7 +115,7 @@ class Retos extends Service
 						'caption' => 'Leer los [Terminos] del servicio',
 						'checker' => [
 							'type' => 'count',
-							'data' => "SELECT count(*) as total FROM utilization WHERE requestor = '{$request->email}' AND service = 'terminos'"
+							'data' => "SELECT count(*) as total FROM delivery_received WHERE `user` = '{$request->email}' AND locate('terminos', lower(subject)) = 1"
 						]
 					],
 					1 => [
@@ -132,14 +132,14 @@ class Retos extends Service
 						'caption' => 'Leer las maneras de ganar [credito]',
 						'checker' => [
 							'type' => 'count',
-							'data' => "SELECT count(*) as total FROM utilization WHERE requestor = '{$request->email}' AND service = 'web' AND query = 'credito.apretaste.com'"
+							'data' => "SELECT count(*) as total FROM delivery_received WHERE `user` = '{$request->email}' AND locate('web',lower(subject)) = 1 AND locate('credito.apretaste.com', lower(subject)) > 0"
 						]
 					],
 					3 => [
 						'caption' => 'Abrir el [Soporte] por primera vez',
 						'checker' => [
 							'type' => 'count',
-							'data' => "SELECT count(*) as total FROM utilization WHERE requestor = '{$request->email}' AND service = 'soporte'"
+							'data' => "SELECT count(*) as total FROM delivery_received WHERE `user` = '{$request->email}' AND locate('soporte', lower(subject)) = 1"
 						]
 					],
 					4 => [
@@ -167,21 +167,21 @@ class Retos extends Service
 						'caption' => 'Ver la lista de [Concursos] abiertos',
 						'checker' => [
 							'type' => 'count',
-							'data' => "SELECT count(*) as total FROM utilization WHERE requestor = '{$request->email}' AND service = 'concurso'"
+							'data' => "SELECT count(*) as total FROM delivery_received WHERE `user` = '{$request->email}' AND locate('concurso', lower(subject)) = 1"
 						]
 					],
 					7 => [
 						'caption' => 'Revisar las notas en la [Pizarra]',
 						'checker' => [
 							'type' => 'count',
-							'data' => "SELECT count(*) as total FROM utilization WHERE requestor = '{$request->email}' AND service = 'pizarra'"
+							'data' => "SELECT count(*) as total FROM delivery_received WHERE `user` = '{$request->email}' AND locate('pizarra', lower(subject)) = 1"
 						]
 					],
 					8 => [
 						'caption' => 'Escribir o votar por una [Sugerencia]',
 						'checker' => [
-							'type' => 'count',
-							'data' => "SELECT count(*) as total FROM utilization WHERE requestor = '{$request->email}' AND service = 'sugerencias' AND (subservice = 'crear' OR subservice = 'votar')"
+							'type' => 'count', // "sugerencias" contiene "sugerencia" y este es alias del servicio
+							'data' => "SELECT count(*) as total FROM delivery_received WHERE `user` = '{$request->email}' AND locate('sugerencia', lower(subject)) = 1 AND (locate('crear', lower(subject)) > 0 OR locate('votar', lower(subject))> 0)"
 						]
 					],
 					9 => [
@@ -195,7 +195,7 @@ class Retos extends Service
 						'caption' => 'Revisar los articulos de la [Tienda]',
 						'checker' => [
 							'type' => 'count',
-							'data' => "SELECT count(*) as total FROM utilization WHERE requestor = '{$request->email}' AND service = 'tienda'"
+							'data' => "SELECT count(*) as total FROM delivery_received WHERE `user` = '{$request->email}' AND locate('tienda', lower(subject)) = 1"
 						]
 					]
 				],
@@ -265,7 +265,7 @@ class Retos extends Service
 						'link' => "SUGERENCIAS",
 						'checker' => [
 							'type' => 'count',
-							'data' => "SELECT count(*) as total FROM utilization WHERE requestor = '{$request->email}' AND service = 'sugerencias' AND (subservice = 'crear' OR subservice = 'votar') AND week('{$this->now}') = week(request_time) AND year(request_time) = year('{$this->now}')"
+							'data' => "SELECT count(*) as total FROM delivery_received WHERE `user` = '{$request->email}' AND locate('sugerencia', lower(subject)) = 1 AND (locate('crear', lower(subject)) > 0 OR locate('votar', lower(subject))> 0) AND week('{$this->now}') = week(inserted) AND year(inserted) = year('{$this->now}')"
 						]
 					],
 					2 => [
