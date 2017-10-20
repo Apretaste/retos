@@ -130,6 +130,7 @@ class Retos extends Service
 					],
 					2 => [
 						'caption' => 'Leer las maneras de ganar [credito]',
+						'link' => "WEB credito.apretaste.com",
 						'checker' => [
 							'type' => 'count',
 							'data' => "SELECT count(*) as total FROM delivery_received WHERE `user` = '{$request->email}' AND locate('web',lower(subject)) = 1 AND locate('credito.apretaste.com', lower(subject)) > 0"
@@ -179,6 +180,7 @@ class Retos extends Service
 					],
 					8 => [
 						'caption' => 'Escribir o votar por una [Sugerencia]',
+						'link' => "SUGERENCIAS",
 						'checker' => [
 							'type' => 'count', // "sugerencias" contiene "sugerencia" y este es alias del servicio
 							'data' => "SELECT count(*) as total FROM delivery_received WHERE `user` = '{$request->email}' AND locate('sugerencia', lower(subject)) = 1 AND (locate('crear', lower(subject)) > 0 OR locate('votar', lower(subject))> 0)"
