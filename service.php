@@ -253,7 +253,7 @@ class Retos extends Service
 						'caption' => 'Usar la [app] los siete d&iacute;as de la semana (X/7)',
 						'checker' => [
 							'type' => 'count',
-							'data' => "SELECT count(*) as total FROM delivery_received WHERE webhook = 'app' AND user = '{$request->email}' AND week('{$this->now}') = week(inserted) AND year(inserted) = year('{$this->now}')",
+							'data' => "SELECT count(*) as total FROM delivery WHERE environment = 'app' AND user = '{$request->email}' AND week('{$this->now}') = week(request_date) AND year(request_date) = year('{$this->now}')",
 							'cmp' => function($value)
 							{
 								return $value == 7;
