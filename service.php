@@ -115,7 +115,7 @@ class Retos extends Service
 						'caption' => 'Leer los [Terminos] del servicio',
 						'checker' => [
 							'type' => 'count',
-							'data' => "SELECT count(*) as total FROM delivery_received WHERE `user` = '{$request->email}' AND locate('terminos', lower(subject)) = 1"
+							'data' => "SELECT count(*) as total FROM delivery WHERE `user` = '{$request->email}' AND request_service = 'terminos'"
 						]
 					],
 					1 => [
@@ -133,14 +133,14 @@ class Retos extends Service
 						'link' => "WEB credito.apretaste.com",
 						'checker' => [
 							'type' => 'count',
-							'data' => "SELECT count(*) as total FROM delivery_received WHERE `user` = '{$request->email}' AND locate('web',lower(subject)) = 1 AND locate('credito.apretaste.com', lower(subject)) > 0"
+							'data' => "SELECT count(*) as total FROM delivery WHERE `user` = '{$request->email}' AND request_service = 'web' AND locate('credito.apretaste.com', lower(email_subject)) > 0"
 						]
 					],
 					3 => [
 						'caption' => 'Abrir el [Soporte] por primera vez',
 						'checker' => [
 							'type' => 'count',
-							'data' => "SELECT count(*) as total FROM delivery_received WHERE `user` = '{$request->email}' AND locate('soporte', lower(subject)) = 1"
+							'data' => "SELECT count(*) as total FROM delivery WHERE `user` = '{$request->email}' AND request_service = 'soporte'"
 						]
 					],
 					4 => [
@@ -168,14 +168,14 @@ class Retos extends Service
 						'caption' => 'Ver la lista de [Concursos] abiertos',
 						'checker' => [
 							'type' => 'count',
-							'data' => "SELECT count(*) as total FROM delivery_received WHERE `user` = '{$request->email}' AND locate('concurso', lower(subject)) = 1"
+							'data' => "SELECT count(*) as total FROM delivery WHERE `user` = '{$request->email}' AND request_service = 'concurso'"
 						]
 					],
 					7 => [
 						'caption' => 'Revisar las notas en la [Pizarra]',
 						'checker' => [
 							'type' => 'count',
-							'data' => "SELECT count(*) as total FROM delivery_received WHERE `user` = '{$request->email}' AND locate('pizarra', lower(subject)) = 1"
+							'data' => "SELECT count(*) as total FROM delivery WHERE `user` = '{$request->email}' AND request_service = 'pizarra'"
 						]
 					],
 					8 => [
@@ -183,7 +183,7 @@ class Retos extends Service
 						'link' => "SUGERENCIAS",
 						'checker' => [
 							'type' => 'count', // "sugerencias" contiene "sugerencia" y este es alias del servicio
-							'data' => "SELECT count(*) as total FROM delivery_received WHERE `user` = '{$request->email}' AND locate('sugerencia', lower(subject)) = 1 AND (locate('crear', lower(subject)) > 0 OR locate('votar', lower(subject))> 0)"
+							'data' => "SELECT count(*) as total FROM delivery WHERE `user` = '{$request->email}' AND request_service = 'sugerencia' AND request_subservice = 'crear' OR request_subservice = 'votar'"
 						]
 					],
 					9 => [
@@ -197,7 +197,7 @@ class Retos extends Service
 						'caption' => 'Revisar los articulos de la [Tienda]',
 						'checker' => [
 							'type' => 'count',
-							'data' => "SELECT count(*) as total FROM delivery_received WHERE `user` = '{$request->email}' AND locate('tienda', lower(subject)) = 1"
+							'data' => "SELECT count(*) as total FROM delivery WHERE `user` = '{$request->email}' AND request_service = 'tienda'"
 						]
 					]
 				],
@@ -255,7 +255,7 @@ class Retos extends Service
 						'caption' => 'Usar la [app] los siete d&iacute;as de la semana (X/7)',
 						'checker' => [
 							'type' => 'count',
-							'data' => "SELECT count(*) as total FROM delivery_received WHERE webhook = 'app' AND user = '{$request->email}' AND week('{$this->now}') = week(inserted) AND year(inserted) = year('{$this->now}')",
+							'data' => "SELECT count(*) as total FROM delivery WHERE environment = 'app' AND user = '{$request->email}' AND week('{$this->now}') = week(request_date) AND year(request_date) = year('{$this->now}')",
 							'cmp' => function($value)
 							{
 								return $value == 7;
@@ -267,7 +267,7 @@ class Retos extends Service
 						'link' => "SUGERENCIAS",
 						'checker' => [
 							'type' => 'count',
-							'data' => "SELECT count(*) as total FROM delivery_received WHERE `user` = '{$request->email}' AND locate('sugerencia', lower(subject)) = 1 AND (locate('crear', lower(subject)) > 0 OR locate('votar', lower(subject))> 0) AND week('{$this->now}') = week(inserted) AND year(inserted) = year('{$this->now}')"
+							'data' => "SELECT count(*) as total FROM delivery WHERE `user` = '{$request->email}' AND request_service = 'sugerencia' AND (request_subservice = 'crear' OR request_subservice = 'votar') AND week('{$this->now}') = week(request_date) AND year(request_date) = year('{$this->now}')"
 						]
 					],
 					2 => [
