@@ -133,7 +133,7 @@ class Retos extends Service
 						'link' => "WEB credito.apretaste.com",
 						'checker' => [
 							'type' => 'count',
-							'data' => "SELECT count(*) as total FROM delivery WHERE `user` = '{$request->email}' AND request_service = 'web' AND locate('credito.apretaste.com', lower(email_subject)) > 0"
+							'data' => "SELECT count(*) as total FROM delivery WHERE `user` = '{$request->email}' AND request_service = 'web' AND locate('credito.apretaste.com', lower(request_query)) > 0"
 						]
 					],
 					3 => [
@@ -255,7 +255,15 @@ class Retos extends Service
 						'caption' => 'Usar la [app] los siete d&iacute;as de la semana (X/7)',
 						'checker' => [
 							'type' => 'count',
-							'data' => "SELECT count(*) as total FROM delivery WHERE environment = 'app' AND user = '{$request->email}' AND week('{$this->now}') = week(request_date) AND year(request_date) = year('{$this->now}')",
+							'data' => "SELECT count(fecha) as total FROM (
+										  SELECT
+										    count(*)                              AS total,
+										    date_format(request_date, '%Y-%m-%d') AS fecha
+										  FROM delivery
+										  WHERE environment = 'app' AND user = '{$request->email}' AND week('{$this->now}') = week(request_date) AND
+										        year(request_date) = year('{$this->now}')
+										  GROUP BY date_format(request_date, '%Y-%m-%d')
+										) subq",
 							'cmp' => function($value)
 							{
 								return $value == 7;
@@ -309,7 +317,7 @@ class Retos extends Service
 					],
 					6 => [
 						'caption' => 'Comprar tickets para la [Rifa]',
-						[
+						'checker' => [
 							'type' => 'count',
 							'data' => "SELECT count(*) as total FROM ticket WHERE email = '{$request->email}' AND origin = 'PURCHASE' AND week('{$this->now}') = week(creation_time) AND year(creation_time) = year('{$this->now}')"
 						]
