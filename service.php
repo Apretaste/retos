@@ -119,7 +119,7 @@ class Retos extends Service
 						]
 					],
 					1 => [
-						'caption' => 'Completar su [perfil] de usuario y poner foto',
+						'caption' => 'Completar su perfil de usuario y poner foto',
 						'checker' => [
 							'type' => 'callable',
 							'data' => function($data)
