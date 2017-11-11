@@ -121,11 +121,13 @@ class Retos extends Service
 					1 => [
 						'caption' => 'Completar su perfil de usuario y poner foto',
 						'checker' => [
-							'type' => 'callable',
+							'type' => 'count',
+							'data' => "SELECT count(*) as total FROM person WHERE email = '{$request->email}' AND updated_by_user = 1"
+							/*
 							'data' => function($data)
 							{
 								return $this->utils->getProfileCompletion($data['request']->email) == 100;
-							}
+							}*/
 						]
 					],
 					2 => [
