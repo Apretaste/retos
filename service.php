@@ -185,7 +185,7 @@ class Retos extends Service
 						'link' => "SUGERENCIAS",
 						'checker' => [
 							'type' => 'count', // "sugerencias" contiene "sugerencia" y este es alias del servicio
-							'data' => "SELECT count(*) as total FROM delivery WHERE `user` = '{$request->email}' AND request_service = 'sugerencia' AND request_subservice = 'crear' OR request_subservice = 'votar'"
+							'data' => "SELECT count(*) as total FROM delivery WHERE `user` = '{$request->email}' AND request_service = 'sugerencias' AND request_subservice = 'crear' OR request_subservice = 'votar'"
 						]
 					],
 					9 => [
@@ -277,7 +277,7 @@ class Retos extends Service
 						'link' => "SUGERENCIAS",
 						'checker' => [
 							'type' => 'count',
-							'data' => "SELECT count(*) as total FROM delivery WHERE `user` = '{$request->email}' AND request_service = 'sugerencia' AND (request_subservice = 'crear' OR request_subservice = 'votar') AND week('{$this->now}') = week(request_date) AND year(request_date) = year('{$this->now}')"
+							'data' => "SELECT count(*) as total FROM delivery WHERE `user` = '{$request->email}' AND request_service = 'sugerencias' AND (request_subservice = 'crear' OR request_subservice = 'votar') AND week('{$this->now}') = week(request_date) AND year(request_date) = year('{$this->now}')"
 						]
 					],
 					2 => [
@@ -285,7 +285,7 @@ class Retos extends Service
 						'link' => 'REFERIR @amigo',
 						'checker' => [
 							'type' => 'count',
-							'data' => "SELECT count(*) as total FROM _referir WHERE user = '{$request->email}' AND week('{$this->now}') = week(inserted) AND year(inserted) = year('{$this->now}')"
+							'data' => "SELECT count(*) as total FROM _referir WHERE father = '{$request->email}' AND week('{$this->now}') = week(inserted) AND year(inserted) = year('{$this->now}')"
 						]
 					],
 					3 => [
