@@ -297,7 +297,7 @@ class Retos extends Service
 					],
 					4 => [
 						'caption' => 'Enviar una nota privada a otro usuario',
-						'link' => 'CHAT @amigo Hola que tal..',
+						'link' => 'CHAT',
 						'checker' => [
 							'type' => 'count',
 							'data' => "SELECT count(*) as total FROM _note WHERE from_user = '{$request->email}' AND week('{$this->now}') = week(send_date) AND year(send_date) = year('{$this->now}')"
