@@ -282,7 +282,7 @@ class Retos extends Service
 					],
 					2 => [
 						'caption' => 'Referir un amigo a usar la app',
-						'link' => 'REFERIR @amigo',
+						'link' => 'REFERIR',
 						'checker' => [
 							'type' => 'count',
 							'data' => "SELECT count(*) as total FROM _referir WHERE father = '{$request->email}' AND week('{$this->now}') = week(inserted) AND year(inserted) = year('{$this->now}')"
