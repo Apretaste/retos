@@ -41,7 +41,7 @@ class Retos extends Service
 	 *
 	 * @author kuma
 	 * @example
-	 *      $this->q("SELECT * FROM TABLE"); // (more readable / SQL is autodescriptive)
+	 * $this->q("SELECT * FROM TABLE"); // (more readable / SQL is autodescriptive)
 	 *
 	 * @param string $sql
 	 *
@@ -157,13 +157,13 @@ class Retos extends Service
 						'checker' => [
 							'type' => 'count',
 							'data' => "SELECT count(*) as total FROM (
-										  SELECT id, questions, answers, questions - answers as unanswered
-										  FROM ( SELECT id,
-										           (SELECT COUNT(C.id) as total FROM _survey_question C WHERE survey = A.id) as questions,
-										           (SELECT COUNT(D.answer) as answers FROM _survey_answer_choosen D WHERE survey = A.id AND email='{$request->email}') as answers
-										         FROM _survey A WHERE active = 1 ) B
-										  WHERE questions > 0 AND questions - answers <= 0
-									  ) E WHERE unanswered <= 0;"
+										 SELECT id, questions, answers, questions - answers as unanswered
+										 FROM ( SELECT id,
+										 (SELECT COUNT(C.id) as total FROM _survey_question C WHERE survey = A.id) as questions,
+										 (SELECT COUNT(D.answer) as answers FROM _survey_answer_choosen D WHERE survey = A.id AND email='{$request->email}') as answers
+										 FROM _survey A WHERE active = 1 ) B
+										 WHERE questions > 0 AND questions - answers <= 0
+									 ) E WHERE unanswered <= 0;"
 						]
 					],
 					6 => [
@@ -225,7 +225,7 @@ class Retos extends Service
 			'weekly' => [
 				'title' => 'Retos semanales',
 				'prize' => 1,
-				'filter_unique' => "email = '{$request->email}'  AND week('{$this->now}') = week(goal) AND year(goal) = year('{$this->now}')",
+				'filter_unique' => "email = '{$request->email}' AND week('{$this->now}') = week(goal) AND year(goal) = year('{$this->now}')",
 				'get_last' => function($request)
 				{
 					$bad_status = str_repeat('0', count($this->goals['weekly']['goals']));
@@ -254,17 +254,17 @@ class Retos extends Service
 				},
 				'goals' => [
 					0 => [
-						'caption' => 'Usar la [app] los siete d&iacute;as de la semana (X/7)',
+						'caption' => 'Usar la app los siete d&iacute;as de la semana ({count}/7)',
 						'checker' => [
 							'type' => 'count',
 							'data' => "SELECT count(fecha) as total FROM (
-										  SELECT
-										    count(*)                              AS total,
-										    date_format(request_date, '%Y-%m-%d') AS fecha
-										  FROM delivery
-										  WHERE environment = 'app' AND user = '{$request->email}' AND week('{$this->now}') = week(request_date) AND
-										        year(request_date) = year('{$this->now}')
-										  GROUP BY date_format(request_date, '%Y-%m-%d')
+										 SELECT
+										 count(*) AS total,
+										 date_format(request_date, '%Y-%m-%d') AS fecha
+										 FROM delivery
+										 WHERE environment = 'app' AND user = '{$request->email}' AND week('{$this->now}') = week(request_date) AND
+										 year(request_date) = year('{$this->now}')
+										 GROUP BY date_format(request_date, '%Y-%m-%d')
 										) subq",
 							'cmp' => function($value)
 							{
@@ -296,7 +296,7 @@ class Retos extends Service
 						]
 					],
 					4 => [
-						'caption' => 'Enviar una nota privada a otro usuario',
+						'caption' => 'Chatear con otro usuario',
 						'link' => 'CHAT',
 						'checker' => [
 							'type' => 'count',
@@ -308,13 +308,13 @@ class Retos extends Service
 						'checker' => [
 							'type' => 'count',
 							'data' => "SELECT count(*) as total FROM (
-										  SELECT id, questions, answers, questions - answers as unanswered
-										  FROM ( SELECT id,
-										           (SELECT COUNT(C.id) as total FROM _survey_question C WHERE survey = A.id) as questions,
-										           (SELECT COUNT(D.answer) as answers FROM _survey_answer_choosen D WHERE survey = A.id AND email = '{$request->email}' AND week('{$this->now}') = week(date_choosen) AND year(date_choosen) = year('{$this->now}')) as answers
-										         FROM _survey A WHERE active = 1) B
-										  WHERE questions > 0 AND questions - answers <= 0
-									  ) E WHERE unanswered <= 0;"
+										 SELECT id, questions, answers, questions - answers as unanswered
+										 FROM ( SELECT id,
+										 (SELECT COUNT(C.id) as total FROM _survey_question C WHERE survey = A.id) as questions,
+										 (SELECT COUNT(D.answer) as answers FROM _survey_answer_choosen D WHERE survey = A.id AND email = '{$request->email}' AND week('{$this->now}') = week(date_choosen) AND year(date_choosen) = year('{$this->now}')) as answers
+										 FROM _survey A WHERE active = 1) B
+										 WHERE questions > 0 AND questions - answers <= 0
+									 ) E WHERE unanswered <= 0;"
 						]
 					],
 					6 => [
@@ -396,8 +396,10 @@ class Retos extends Service
 				$complete = true;
 				if($this->goals[ $s ]['status'][ $g ] == '0') // check only not completed goals
 				{
-					$complete                          = $this->checkGoal($goal, $request);
-					$this->goals[ $s ]['status'][ $g ] = $complete ? 1 : 0;
+					$count                                       = 0;
+					$complete                                    = $this->checkGoal($goal, $request, $count);
+					$this->goals[ $s ]['goals'][ $g ]['caption'] = str_replace('{count}', "$count", $this->goals[ $s ]['goals'][ $g ]['caption']);
+					$this->goals[ $s ]['status'][ $g ]           = $complete ? 1 : 0;
 				}
 
 				$all_complete                                 = $all_complete && $complete;
@@ -436,10 +438,11 @@ class Retos extends Service
 	 *
 	 * @param array   $goal
 	 * @param Request $request
+	 * @param integer $count
 	 *
 	 * @return bool
 	 */
-	public function checkGoal($goal, $request)
+	public function checkGoal($goal, $request, &$count = 0)
 	{
 
 		$result = false;
@@ -454,7 +457,8 @@ class Retos extends Service
 				case "count":
 					$sql    = $goal['checker']['data'];
 					$r      = $this->q($sql);
-					$result = $cmp($r[0]->total);
+					$count  = $r[0]->total;
+					$result = $cmp($count);
 					break;
 				case 'callable':
 					$call   = $goal['checker']['data'];
@@ -465,6 +469,4 @@ class Retos extends Service
 
 		return $result;
 	}
-
-
 }
