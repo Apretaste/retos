@@ -16,7 +16,7 @@ class Retos extends Service
 
 	public function __construct()
 	{
-		$this->now = date("Y-m-d h:i:s");
+		$this->now = date("Y-m-d H:i:s");
 		//parent::__construct();
 	}
 
