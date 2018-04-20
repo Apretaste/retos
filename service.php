@@ -207,7 +207,7 @@ class Retos extends Service
 				{
 					$prize = $this->goals['initial']['prize'];
 
-					if($this->goals['initial']['checker']($request) == false)
+					if($this->goals['initial']['checker']($request) == true)
 					{
 						// increase credit
 						$this->q("UPDATE person SET credit = credit + 2 WHERE email = '{$request->email}';");
@@ -258,14 +258,14 @@ class Retos extends Service
 						'checker' => [
 							'type' => 'count',
 							'data' => "SELECT count(fecha) as total FROM (
-										 SELECT
-										 count(*) AS total,
-										 date_format(request_date, '%Y-%m-%d') AS fecha
-										 FROM delivery
-										 WHERE environment = 'app' AND user = '{$request->email}' AND week('{$this->now}') = week(request_date) AND
-										 year(request_date) = year('{$this->now}')
-										 GROUP BY date_format(request_date, '%Y-%m-%d')
-										) subq",
+							       SELECT
+							       count(*) AS total,
+							       date_format(request_date, '%Y-%m-%d') AS fecha
+							       FROM delivery
+							       WHERE environment = 'app' AND user = '{$request->email}' AND week('{$this->now}') = week(request_date) AND
+							       year(request_date) = year('{$this->now}')
+							       GROUP BY date_format(request_date, '%Y-%m-%d')
+							      ) subq",
 							'cmp' => function($value)
 							{
 								return $value == 7;
@@ -329,7 +329,7 @@ class Retos extends Service
 				{
 					$prize = $this->goals['weekly']['prize'];
 
-					if($this->goals['weekly']['checker']($request) == false)
+					if($this->goals['weekly']['checker']($request) == true)
 					{
 						// increase credit
 						$this->q("UPDATE person SET credit = credit + $prize WHERE email = '{$request->email}';");
@@ -410,22 +410,24 @@ class Retos extends Service
 			$this->goals[ $s ]['complete'] = $all_complete;
 
 			// save status
-			$this->q("UPDATE _retos SET status = '{$this->goals[$s]['status']}' WHERE {$this->goals[$s]['filter_unique']}");
-
-			if($all_complete)
-			{
-				if(isset($section['completion']))
+			if($this->goals[ $s ]['checker']($request) != true){
+				$this->q("UPDATE _retos SET status = '{$this->goals[$s]['status']}' WHERE {$this->goals[$s]['filter_unique']}");
+				if($all_complete)
 				{
-					$call = $section['completion'];
-					$call($request);
+					$all_complete=false;
+					if(isset($section['completion']))
+					{
+						$call = $this->goals[ $s ]['completion'];
+						$call($request);
+					}
 				}
-			}
-			else
-			{
-				// show first section not completed
-				$this->goals[ $s ]['visible'] = true;
-				$no_more                      = true;
-				continue;
+				else
+				{
+					// show first section not completed
+					$this->goals[ $s ]['visible'] = true;
+					$no_more                      = true;
+					continue;
+				}
 			}
 			$last_section = $s;
 		}
