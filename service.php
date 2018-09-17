@@ -1,474 +1,480 @@
 <?php
 
-/**
- * Apretaste!
- * Retos subservice
- *
- * @author  kumahacker <kumahavana@gmail.com>
- * @version 1.0
- */
 class Retos extends Service
 {
-	public $goals = [];
-	public $now = null; // using "unique now" during the execution of the sevice
-	public $big_ban = '2000-01-01 00:00:00';
-	private $connection = null;
-
-	public function __construct()
-	{
-		$this->now = date("Y-m-d H:i:s");
-		//parent::__construct();
-	}
-
-	/**
-	 * Singleton connection to db
-	 *
-	 * @author kuma
-	 * @return Connection
-	 */
-	private function connection()
-	{
-		if(is_null($this->connection))
-		{
-			$this->connection = new Connection();
-		}
-
-		return $this->connection;
-	}
-
-	/**
-	 * Query assistant
-	 *
-	 * @author kuma
-	 * @example
-	 * $this->q("SELECT * FROM TABLE"); // (more readable / SQL is autodescriptive)
-	 *
-	 * @param string $sql
-	 *
-	 * @return array
-	 */
-	private function q($sql)
-	{
-		return $this->connection()->deepQuery($sql);
-	}
+	private $initialPrize = 2;
+	private $weeklyPrize = 1;
+	private $initialCompletedStatus = "1111111111";
+	private $weeklyCompletedStatus = "111111";
+	private $initialEmptyStatus = "0000000000";
+	private $weeklyEmptyStatus = "000000";
+	private $status;
 
 	/**
 	 * Main response
 	 *
-	 * @param \Request $request
-	 *
-	 * @return \Response
+	 * @author salvipascual
+	 * @param Request $request
+	 * @return Response
 	 */
 	public function _main(Request $request)
 	{
-		$this->initGoals($request);
+		//
+		// INITIAL GOALS SECTION
+		//
 
-		$response = new Response();
-		$response->setResponseSubject("Tus retos");
-		$response->createFromTemplate('basic.tpl', [
-			'goals' => $this->goals
-		]);
+		// get the completion of the initial goals
+		$res = Connection::query("SELECT prize, `status` FROM _retos WHERE person_id={$request->personId} AND `type`='initial'");
+		$this->status = isset($res[0]) ? $res[0]->status : false;
+		$prize = isset($res[0]) ? $res[0]->prize : 0;
 
-		return $response;
+		// create row if do not exist
+		if( ! $this->status) {
+			$this->status = $this->initialEmptyStatus;
+			Connection::query("INSERT INTO _retos (person_id,`type`,`status`) VALUES ({$request->personId},'initial','{$this->status}')");
+		}
+
+		// check status and complte goals
+		$goals = [];
+		$goals[] = $this->goalTerminos(0, 'initial');
+		$goals[] = $this->goalProfile(1, 'initial');
+		$goals[] = $this->goalOrigin(2, 'initial');
+		$goals[] = $this->goalHowToGetCredits(3, 'initial');
+		$goals[] = $this->goalOpenSupport(4, 'initial');
+		$goals[] = $this->goalWhoReferedMe(5, 'initial');
+		$goals[] = $this->goalSurveys(6, 'initial');
+		$goals[] = $this->goalContests(7, 'initial');
+		$goals[] = $this->goalPizarra(8, 'initial');
+		$goals[] = $this->goalRaffle(9, 'initial');
+
+		// if goals were completed today
+		if($this->status == $this->initialCompletedStatus) {
+			// if prize is given, passes to weekly
+			// if prize was not granted yet ...
+			if($prize == 0) {
+				// grant credits and mark prize as paid
+				Connection::query("
+					UPDATE person SET credit = credit + {$this->initialPrize} WHERE id={$request->personId};
+					UPDATE _retos SET prize=1 WHERE person_id={$request->personId} AND `type`='initial';
+				");
+	
+				// tell user know the prize was granted
+				$response = new Response();
+				$response->setResponseSubject("Tus retos");
+				$response->createFromTemplate('completed.tpl', ["credit"=>$this->initialPrize, "showBtn"=>true]);
+				return $response;
+			}
+		// if goals were not completed
+		} else {
+			// send information to the view
+			$response = new Response();
+			$response->setResponseSubject("Tus retos");
+			$response->createFromTemplate('challenges.tpl', ['goals'=>$goals, "credit"=>$this->initialPrize]);
+			return $response;
+		}
+
+		//
+		// WEEKLY GOALS SECTION
+		//
+
+		// get the completion of the weekly goals
+		$res = Connection::query("SELECT prize, `status` FROM _retos WHERE person_id={$request->personId} AND `type`='weekly' AND week_number=WEEK(CURRENT_TIMESTAMP)");
+		$this->status = isset($res[0]) ? $res[0]->status : false;
+		$prize = isset($res[0]) ? $res[0]->prize : 0;
+
+		// create row if do not exist
+		if( ! $this->status) {
+			$this->status = $this->weeklyEmptyStatus;
+			Connection::query("INSERT INTO _retos (person_id,`type`,`status`,week_number) VALUES ({$request->personId},'weekly','{$this->status}',WEEK(CURRENT_TIMESTAMP))");
+		}
+
+		// check status and complete goals
+		$goals = [];
+		$goals[] = $this->goalAppUsage(0, 'weekly');
+		$goals[] = $this->goalGiveFeedback(1, 'weekly');
+		$goals[] = $this->goalPostPizarra(2, 'weekly');
+		$goals[] = $this->goalChat(3, 'weekly');
+		$goals[] = $this->goalReferFriend(4, 'weekly');
+		$goals[] = $this->goalBuyRaffleTickets(5, 'weekly');
+
+		// if goals were completed today
+		if($this->status == $this->weeklyCompletedStatus) {
+			if($prize == 0) {
+				// grant credits and mark prize as paid
+				Connection::query("
+					UPDATE person SET credit = credit + {$this->weeklyPrize} WHERE id={$request->personId};
+					UPDATE _retos SET prize=1 WHERE person_id={$request->personId} AND `type`='weekly' AND week_number=WEEK(CURRENT_TIMESTAMP);
+				");
+			}
+
+			// tell user goals were completed
+			$response = new Response();
+			$response->setResponseSubject("Tus retos");
+			$response->createFromTemplate('completed.tpl', ["credit"=>$this->weeklyPrize, "showBtn"=>false]);
+			return $response;
+		// if goals were not completed
+		} else {
+			// send information to the view
+			$response = new Response();
+			$response->setResponseSubject("Tus retos");
+			$response->createFromTemplate('challenges.tpl', ['goals'=>$goals, "credit"=>$this->weeklyPrize]);
+			return $response;
+		}
 	}
 
 	/**
-	 * Init the goals model
-	 *
-	 * @param Request $request
-	 */
-	public function initGoals($request)
+	 * goal CHECK TERMINOS
+	 * 
+	 * @author salvipascual
+	 * @param Int $pos, position in this->status bit
+	 * @param String $type [initial, weekly]
+	 * */
+	private function goalTerminos($pos, $type)
 	{
-
-		$this->goals = [
-			'initial' => [
-				'title' => 'Retos iniciales',
-				'prize' => 2,
-				'filter_unique' => "email = '{$request->email}' AND goal = '{$this->big_ban}'",
-				'get_last' => function($request)
-				{
-					$bad_status = str_repeat('0', count($this->goals['initial']['goals']));
-					$r          = $this->q("SELECT *, length(replace(status, '0', '')) AS completed FROM _retos WHERE {$this->goals['initial']['filter_unique']}");
-					if(isset($r[0])) return $r[0];
-
-					$this->q("INSERT INTO _retos (email, `type`, goal, prize, status) VALUES ('{$request->email}', 'initial', '{$this->big_ban}', 0, '$bad_status');");
-
-					$r            = new stdClass();
-					$r->email     = $request->email;
-					$r->completed = 0;
-					$r->goal      = $this->big_ban;
-					$r->prize     = 0;
-					$r->status    = $bad_status;
-
-					return $r;
-				},
-				'checker' => function($request)
-				{
-					return $this->goals['initial']['get_last']($request)->completed == count($this->goals['initial']['goals']);
-				},
-				'update_status' => function()
-				{
-					$this->q("UPDATE _retos SET status = '{$this->goals['initial']['status']}' WHERE {$this->goals['initial']['filter_unique']}");
-				},
-				'goals' => [
-					0 => [
-						'caption' => 'Leer los [Terminos] del servicio',
-						'checker' => [
-							'type' => 'count',
-							'data' => "SELECT count(*) as total FROM delivery WHERE `user` = '{$request->email}' AND request_service = 'terminos'"
-						]
-					],
-					1 => [
-						'caption' => 'Completar su perfil de usuario y poner foto',
-						'checker' => [
-							'type' => 'count',
-							'data' => "SELECT count(*) as total FROM person WHERE email = '{$request->email}' AND updated_by_user = 1"
-							/*
-							'data' => function($data)
-							{
-								return $this->utils->getProfileCompletion($data['request']->email) == 100;
-							}*/
-						]
-					],
-					2 => [
-						'caption' => 'Leer las maneras de ganar [credito]',
-						'link' => "WEB credito.apretaste.com",
-						'checker' => [
-							'type' => 'count',
-							'data' => "SELECT count(*) as total FROM delivery WHERE `user` = '{$request->email}' AND request_service = 'web' AND locate('credito.apretaste.com', lower(request_query)) > 0"
-						]
-					],
-					3 => [
-						'caption' => 'Abrir el [Soporte] por primera vez',
-						'checker' => [
-							'type' => 'count',
-							'data' => "SELECT count(*) as total FROM delivery WHERE `user` = '{$request->email}' AND request_service = 'soporte'"
-						]
-					],
-					4 => [
-						'caption' => '[Referir] a un amigo y ganar creditos',
-						'checker' => [
-							'type' => 'count',
-							'data' => "SELECT count(*) as total FROM _referir WHERE user = '{$request->email}'"
-						]
-					],
-					5 => [
-						'caption' => 'Responder una [Encuesta] y ganar creditos',
-						'checker' => [
-							'type' => 'count',
-							'data' => "SELECT count(*) as total FROM (
-										 SELECT id, questions, answers, questions - answers as unanswered
-										 FROM ( SELECT id,
-										 (SELECT COUNT(C.id) as total FROM _survey_question C WHERE survey = A.id) as questions,
-										 (SELECT COUNT(D.answer) as answers FROM _survey_answer_choosen D WHERE survey = A.id AND email='{$request->email}') as answers
-										 FROM _survey A WHERE active = 1 ) B
-										 WHERE questions > 0 AND questions - answers <= 0
-									 ) E WHERE unanswered <= 0;"
-						]
-					],
-					6 => [
-						'caption' => 'Ver la lista de [Concursos] abiertos',
-						'checker' => [
-							'type' => 'count',
-							'data' => "SELECT count(*) as total FROM delivery WHERE `user` = '{$request->email}' AND request_service = 'concurso'"
-						]
-					],
-					7 => [
-						'caption' => 'Revisar las notas en la [Pizarra]',
-						'checker' => [
-							'type' => 'count',
-							'data' => "SELECT count(*) as total FROM delivery WHERE `user` = '{$request->email}' AND request_service = 'pizarra'"
-						]
-					],
-					8 => [
-						'caption' => 'Escribir o votar por una [Sugerencia]',
-						'link' => "SUGERENCIAS",
-						'checker' => [
-							'type' => 'count', // "sugerencias" contiene "sugerencia" y este es alias del servicio
-							'data' => "SELECT count(*) as total FROM delivery WHERE `user` = '{$request->email}' AND request_service = 'sugerencias' AND request_subservice = 'crear' OR request_subservice = 'votar'"
-						]
-					],
-					9 => [
-						'caption' => 'Comprar un ticket para la [Rifa]',
-						'checker' => [
-							'type' => 'count',
-							'data' => "SELECT count(*) as total FROM ticket WHERE email = '{$request->email}' AND origin = 'PURCHASE'"
-						]
-					],
-					10 => [
-						'caption' => 'Revisar los articulos de la [Tienda]',
-						'checker' => [
-							'type' => 'count',
-							'data' => "SELECT count(*) as total FROM delivery WHERE `user` = '{$request->email}' AND request_service = 'tienda'"
-						]
-					]
-				],
-				'completion' => function(Request $request)
-				{
-					$prize = $this->goals['initial']['prize'];
-
-					if($this->goals['initial']['checker']($request) == true)
-					{
-						// increase credit
-						$this->q("UPDATE person SET credit = credit + 2 WHERE email = '{$request->email}';");
-
-						// update prize
-						$this->q("UPDATE _retos SET prize = $prize WHERE {$this->goals['initial']['filter_unique']}");
-
-						// send notification
-						$text = 'Usted complet&oacute; los retos iniciales y gano &sect;2.00, ahora le ofreceremos retos cada semana';
-						$this->utils->addNotification($request->email, 'RETOS', $text);
-					}
-				},
-				'completion_text' => false
-			],
-			'weekly' => [
-				'title' => 'Retos semanales',
-				'prize' => 1,
-				'filter_unique' => "email = '{$request->email}' AND week('{$this->now}') = week(goal) AND year(goal) = year('{$this->now}')",
-				'get_last' => function($request)
-				{
-					$bad_status = str_repeat('0', count($this->goals['weekly']['goals']));
-
-					$r = $this->q("SELECT *, length(replace(status, '0', '')) AS completed FROM _retos WHERE {$this->goals['weekly']['filter_unique']}");
-					if(isset($r[0])) return $r[0];
-
-					$this->q("INSERT INTO _retos (email, `type`, goal, prize, status) VALUES ('{$request->email}', 'weekly', '{$this->now}', 0, '$bad_status');");
-
-					$r            = new stdClass();
-					$r->email     = $request->email;
-					$r->completed = 0;
-					$r->goal      = $this->now;
-					$r->prize     = 0;
-					$r->status    = $bad_status;
-
-					return $r;
-				},
-				'checker' => function($request)
-				{
-					return $this->goals['weekly']['get_last']($request)->completed == count($this->goals['weekly']['goals']);
-				},
-				'update_status' => function($request)
-				{
-					$this->q("UPDATE _retos SET status = '{$this->goals['initial']['status']}' WHERE {$this->goals['weekly']['filter_unique']}");
-				},
-				'goals' => [
-					0 => [
-						'caption' => 'Usar la app los siete d&iacute;as de la semana ({count}/7)',
-						'checker' => [
-							'type' => 'count',
-							'data' => "SELECT count(fecha) as total FROM (
-							       SELECT
-							       count(*) AS total,
-							       date_format(request_date, '%Y-%m-%d') AS fecha
-							       FROM delivery
-							       WHERE environment = 'app' AND user = '{$request->email}' AND week('{$this->now}') = week(request_date) AND
-							       year(request_date) = year('{$this->now}')
-							       GROUP BY date_format(request_date, '%Y-%m-%d')
-							      ) subq",
-							'cmp' => function($value)
-							{
-								return $value == 7;
-							}
-						]
-					],
-					1 => [
-						'caption' => 'Escribir o votar por una [Sugerencia]',
-						'link' => "SUGERENCIAS",
-						'checker' => [
-							'type' => 'count',
-							'data' => "SELECT count(*) as total FROM delivery WHERE `user` = '{$request->email}' AND request_service = 'sugerencias' AND (request_subservice = 'crear' OR request_subservice = 'votar') AND week('{$this->now}') = week(request_date) AND year(request_date) = year('{$this->now}')"
-						]
-					],
-					2 => [
-						'caption' => 'Referir un amigo a usar la app',
-						'link' => 'REFERIR',
-						'checker' => [
-							'type' => 'count',
-							'data' => "SELECT count(*) as total FROM _referir WHERE father = '{$request->email}' AND week('{$this->now}') = week(inserted) AND year(inserted) = year('{$this->now}')"
-						]
-					],
-					3 => [
-						'caption' => 'Escribir una nota publica en la [Pizarra]',
-						'checker' => [
-							'type' => 'count',
-							'data' => "SELECT count(*) as total FROM _pizarra_notes WHERE email = '{$request->email}' AND week('{$this->now}') = week(inserted) AND year(inserted) = year('{$this->now}')"
-						]
-					],
-					4 => [
-						'caption' => 'Chatear con otro usuario',
-						'link' => 'CHAT',
-						'checker' => [
-							'type' => 'count',
-							'data' => "SELECT count(*) as total FROM _note WHERE from_user = '{$request->email}' AND week('{$this->now}') = week(send_date) AND year(send_date) = year('{$this->now}')"
-						]
-					],
-					5 => [
-						'caption' => 'Contestar una [encuesta] y ganar creditos',
-						'checker' => [
-							'type' => 'count',
-							'data' => "SELECT count(*) as total FROM (
-										 SELECT id, questions, answers, questions - answers as unanswered
-										 FROM ( SELECT id,
-										 (SELECT COUNT(C.id) as total FROM _survey_question C WHERE survey = A.id) as questions,
-										 (SELECT COUNT(D.answer) as answers FROM _survey_answer_choosen D WHERE survey = A.id AND email = '{$request->email}' AND week('{$this->now}') = week(date_choosen) AND year(date_choosen) = year('{$this->now}')) as answers
-										 FROM _survey A WHERE active = 1) B
-										 WHERE questions > 0 AND questions - answers <= 0
-									 ) E WHERE unanswered <= 0;"
-						]
-					],
-					6 => [
-						'caption' => 'Comprar tickets para la [Rifa]',
-						'checker' => [
-							'type' => 'count',
-							'data' => "SELECT count(*) as total FROM ticket WHERE email = '{$request->email}' AND origin = 'PURCHASE' AND week('{$this->now}') = week(creation_time) AND year(creation_time) = year('{$this->now}')"
-						]
-					]
-				],
-				'completion' => function(Request $request)
-				{
-					$prize = $this->goals['weekly']['prize'];
-
-					if($this->goals['weekly']['checker']($request) == true)
-					{
-						// increase credit
-						$this->q("UPDATE person SET credit = credit + $prize WHERE email = '{$request->email}';");
-
-						// update prize
-						$this->q("UPDATE _retos SET prize = $prize WHERE {$this->goals['weekly']['filter_unique']}");
-
-						// send notification
-						$text = 'Usted complet&oacute; los retos de la semana y gan&oacute; &sect;' . number_format($prize, 2) . '. Vuelva con el mismo entusiasmo la semana pr&oacute;xima.';
-						$this->utils->addNotification($request->email, 'RETOS', $text);
-					}
-				},
-				'completion_text' => 'Usted ya complet&oacute; los retos de la semana. Vuelva con el mismo entusiasmo la semana pr&oacute;xima.'
-			]
-		];
-
-		// checking each goal
-		$last_section = false;
-		$no_more      = false;
-		foreach($this->goals as $s => $section)
-		{
-			$this->goals[ $s ]['total']          = count($section['goals']);
-			$this->goals[ $s ]['complete_count'] = 0;
-			$this->goals[ $s ]['visible']        = false;
-			$this->goals[ $s ]['status']         = $this->goals[ $s ]['get_last']($request)->status;
-			$all_complete                        = true;
-
-			if($no_more) continue;
-
-			$verify = true;
-			if(isset($section['checker']))
-			{
-				$r = $section['checker']($request);
-				if($r == true) $verify = false;
-			}
-
-			// prepare links
-			foreach($section['goals'] as $g => $goal)
-			{
-				if( ! isset($goal['link']))
-				{
-					$c = $goal['caption'];
-					$p = strpos($c, '[');
-					if($p !== false)
-					{
-						$p1 = strpos($c, "]");
-						if($p1 !== false) $this->goals[ $s ]['goals'][ $g ]['link'] = substr($c, $p + 1, $p1 - $p - 1);
-						else
-							$this->goals[ $s ]['goals'][ $g ]['link'] = false;
-					}
-					else
-						$this->goals[ $s ]['goals'][ $g ]['link'] = false;
-				}
-
-				$this->goals[ $s ]['goals'][ $g ]['caption'] = str_replace([
-					'[',
-					']'
-				], '', $this->goals[ $s ]['goals'][ $g ]['caption']);
-			}
-
-			// checkers
-			if($verify) foreach($section['goals'] as $g => $goal)
-			{
-				$complete = true;
-				if($this->goals[ $s ]['status'][ $g ] == '0') // check only not completed goals
-				{
-					$count                                       = 0;
-					$complete                                    = $this->checkGoal($goal, $request, $count);
-					$this->goals[ $s ]['goals'][ $g ]['caption'] = str_replace('{count}', "$count", $this->goals[ $s ]['goals'][ $g ]['caption']);
-					$this->goals[ $s ]['status'][ $g ]           = $complete ? 1 : 0;
-				}
-
-				$all_complete                                 = $all_complete && $complete;
-				$this->goals[ $s ]['goals'][ $g ]['complete'] = $complete;
-				$this->goals[ $s ]['complete_count']          += $complete ? 1 : 0;
-			}
-
-			$this->goals[ $s ]['complete'] = $all_complete;
-
-			// save status
-			if($this->goals[ $s ]['checker']($request) != true){
-				$this->q("UPDATE _retos SET status = '{$this->goals[$s]['status']}' WHERE {$this->goals[$s]['filter_unique']}");
-				if($all_complete)
-				{
-					$all_complete=false;
-					if(isset($section['completion']))
-					{
-						$call = $this->goals[ $s ]['completion'];
-						$call($request);
-					}
-				}
-				else
-				{
-					// show first section not completed
-					$this->goals[ $s ]['visible'] = true;
-					$no_more                      = true;
-					continue;
-				}
-			}
-			$last_section = $s;
+		// if the goal is not ready, check completion
+		if( ! $this->status[$pos]) {
+			$count = Connection::query("SELECT COUNT(id) AS cnt FROM delivery WHERE id_person='{$this->request->personId}' AND request_service='terminos'");
+			if($count[0]->cnt >= 1) $this->markGoalAsDone($pos, $type);
 		}
 
-		if($last_section !== false) $this->goals[ $last_section ]['visible'] = true;
+		return ["caption"=>"Leer los Terminos del servicio", "completed"=>$this->status[$pos], "link"=>"TERMINOS"];
 	}
 
 	/**
-	 * Check goal
-	 *
-	 * @param array   $goal
-	 * @param Request $request
-	 * @param integer $count
-	 *
-	 * @return bool
-	 */
-	public function checkGoal($goal, $request, &$count = 0)
+	 * goal FILL PERFIL
+	 * 
+	 * @author salvipascual
+	 * @param Int $pos, position in this->status bit
+	 * @param String $type [initial, weekly]
+	 * */
+	private function goalProfile($pos, $type)
 	{
-
-		$result = false;
-		if(isset($goal['checker']))
-		{
-			if( ! isset($goal['checker']['cmp'])) $goal['checker']['cmp'] = function($value) { return $value > 0; };
-
-			$cmp = $goal['checker']['cmp'];
-
-			switch($goal['checker']['type'])
-			{
-				case "count":
-					$sql    = $goal['checker']['data'];
-					$r      = $this->q($sql);
-					$count  = $r[0]->total;
-					$result = $cmp($count);
-					break;
-				case 'callable':
-					$call   = $goal['checker']['data'];
-					$result = $call(['request' => $request]);
-					break;
-			}
+		// if the goal is not ready, check completion
+		if( ! $this->status[$pos]) {
+			$count = Connection::query("SELECT COUNT(id) as cnt FROM person WHERE id='{$this->request->personId}' AND updated_by_user = 1");
+			if($count[0]->cnt >= 1) $this->markGoalAsDone($pos, $type);
 		}
 
-		return $result;
+		return ["caption"=>"Completar su perfil de usuario y poner foto", "completed"=>$this->status[$pos], "link"=>"PERFIL EDITAR"];
+	}
+
+	/**
+	 * goal SET ORIGIN
+	 * 
+	 * @author salvipascual
+	 * @param Int $pos, position in this->status bit
+	 * @param String $type [initial, weekly]
+	 * */
+	private function goalOrigin($pos, $type)
+	{
+		// if the goal is not ready, check completion
+		if( ! $this->status[$pos]) {
+			$count = Connection::query("SELECT COUNT(id) as cnt FROM person WHERE id='{$this->request->personId}' AND origin IS NOT NULL");
+			if($count[0]->cnt >= 1) $this->markGoalAsDone($pos, $type);
+		}
+
+		return ["caption"=>"Dinos donde escuch&oacute; sobre la app", "completed"=>$this->status[$pos], "link"=>"PERFIL ORIGEN"];
+	}
+
+	/**
+	 * goal HOW TO GET CREDITS
+	 * 
+	 * @author salvipascual
+	 * @param Int $pos, position in this->status bit
+	 * @param String $type [initial, weekly]
+	 * */
+	private function goalHowToGetCredits($pos, $type)
+	{
+		// if the goal is not ready, check completion
+		if( ! $this->status[$pos]) {
+			$count = Connection::query("SELECT COUNT(id) AS cnt FROM delivery WHERE id_person={$this->request->personId} AND request_service='web' AND LOCATE('credito.apretaste.com', lower(request_query)) > 0");
+			if($count[0]->cnt >= 1) $this->markGoalAsDone($pos, $type);
+		}
+
+		return ["caption"=>"Leer las maneras de ganar credito", "completed"=>$this->status[$pos], "link"=>"CREDITOS"];
+	}
+
+	/**
+	 * goal OPEN SUPPORT
+	 * 
+	 * @author salvipascual
+	 * @param Int $pos, position in this->status bit
+	 * @param String $type [initial, weekly]
+	 * */
+	private function goalOpenSupport($pos, $type)
+	{
+		// if the goal is not ready, check completion
+		if( ! $this->status[$pos]) {
+			$count = Connection::query("SELECT COUNT(id) as cnt FROM delivery WHERE id_person={$this->request->personId} AND request_service = 'soporte'");
+			if($count[0]->cnt >= 1) $this->markGoalAsDone($pos, $type);
+		}
+
+		return ["caption"=>"Abrir el Soporte por primera vez", "completed"=>$this->status[$pos], "link"=>"SOPORTE"];
+	}
+
+	/**
+	 * goal ADD WHO REFERRED YOU
+	 * 
+	 * @author salvipascual
+	 * @param Int $pos, position in this->status bit
+	 * @param String $type [initial, weekly]
+	 * */
+	private function goalWhoReferedMe($pos, $type)
+	{
+		// if the goal is not ready, check completion
+		if( ! $this->status[$pos]) {
+			$count = Connection::query("SELECT count(id) as cnt FROM _referir WHERE user='{$this->request->email}'");
+			if($count[0]->cnt >= 1) $this->markGoalAsDone($pos, $type);
+		}
+
+		return ["caption"=>"Referir a un amigo y ganar creditos", "completed"=>$this->status[$pos], "link"=>"REFERIR"];
+	}
+
+	/**
+	 * goal REFER FRIEND
+	 * 
+	 * @author salvipascual
+	 * @param Int $pos, position in this->status bit
+	 * @param String $type [initial, weekly]
+	 * */
+	private function goalReferFriend($pos, $type)
+	{
+		// if the goal is not ready, check completion
+		if( ! $this->status[$pos]) {
+			$count = Connection::query("
+				SELECT COUNT(id) AS cnt 
+				FROM _referir 
+				WHERE father = '{$this->request->email}' 
+				AND WEEK(inserted) = WEEK(CURRENT_TIMESTAMP) 
+				AND YEAR(inserted) = YEAR(CURRENT_TIMESTAMP)");
+			if($count[0]->cnt >= 1) $this->markGoalAsDone($pos, $type);
+		}
+
+		return ["caption"=>"Referir a un amigo y ganar creditos", "completed"=>$this->status[$pos], "link"=>"REFERIR"];
+	}
+
+	/**
+	 * goal CHECK SURVEYS
+	 * 
+	 * @author salvipascual
+	 * @param Int $pos, position in this->status bit
+	 * @param String $type [initial, weekly]
+	 * */
+	private function goalSurveys($pos, $type)
+	{
+		// if the goal is not ready, check completion
+		if( ! $this->status[$pos]) {
+			$count = Connection::query("SELECT COUNT(id) AS cnt FROM delivery WHERE id_person={$this->request->personId} AND request_service='encuesta'");
+			if($count[0]->cnt >= 1) $this->markGoalAsDone($pos, $type);
+		}
+
+		return ["caption"=>"Ver las Encuestas activas y listas para ganar creditos", "completed"=>$this->status[$pos], "link"=>"ENCUESTA"];
+	}
+
+	/**
+	 * goal CHECK CONTESTS
+	 * 
+	 * @author salvipascual
+	 * @param Int $pos, position in this->status bit
+	 * @param String $type [initial, weekly]
+	 * */
+	private function goalContests($pos, $type)
+	{
+		// if the goal is not ready, check completion
+		if( ! $this->status[$pos]) {
+			$count = Connection::query("SELECT COUNT(id) AS cnt FROM delivery WHERE id_person={$this->request->personId} AND request_service='concurso'");
+			if($count[0]->cnt >= 1) $this->markGoalAsDone($pos, $type);
+		}
+
+		return ["caption"=>"Ver la lista de Concursos abiertos", "completed"=>$this->status[$pos], "link"=>"CONCURSOS"];
+	}
+
+	/**
+	 * goal CHECK PIZARRA
+	 * 
+	 * @author salvipascual
+	 * @param Int $pos, position in this->status bit
+	 * @param String $type [initial, weekly]
+	 * */
+	private function goalPizarra($pos, $type)
+	{
+		// if the goal is not ready, check completion
+		if( ! $this->status[$pos]) {
+			$count = Connection::query("SELECT COUNT(id) AS cnt FROM delivery WHERE id_person={$this->request->personId} AND request_service='pizarra'");
+			if($count[0]->cnt >= 1) $this->markGoalAsDone($pos, $type);
+		}
+
+		return ["caption"=>"Revisar las notas en la Pizarra", "completed"=>$this->status[$pos], "link"=>"PIZARRA"];
+	}
+
+	/**
+	 * goal CHECK THE RAFFLE
+	 * 
+	 * @author salvipascual
+	 * @param Int $pos, position in this->status bit
+	 * @param String $type [initial, weekly]
+	 * */
+	private function goalRaffle($pos, $type)
+	{
+		// if the goal is not ready, check completion
+		if( ! $this->status[$pos]) {
+			$count = Connection::query("SELECT COUNT(id) AS cnt FROM delivery WHERE id_person={$this->request->personId} AND request_service='rifa'");
+			if($count[0]->cnt >= 1) $this->markGoalAsDone($pos, $type);
+		}
+
+		return ["caption"=>"Revisar la Rifa y aprender como adquirir tickets ", "completed"=>$this->status[$pos], "link"=>"RIFA"];
+	}
+
+	/**
+	 * goal USE APP
+	 * 
+	 * @author salvipascual
+	 * @param Int $pos, position in this->status bit
+	 * @param String $type [initial, weekly]
+	 * */
+	private function goalAppUsage($pos, $type)
+	{
+		// if the goal is not ready, check completion
+		$daysCount = false;
+		if( ! $this->status[$pos]) {
+			// get the number of days used
+			$days = Connection::query("
+				SELECT COUNT(id) AS nbr
+				FROM delivery 
+				WHERE id_person = {$this->request->personId}
+				AND WEEK(request_date) = WEEK(CURRENT_TIMESTAMP)
+				AND YEAR(request_date) = YEAR(CURRENT_TIMESTAMP)
+				GROUP BY DATE(request_date)");
+			$daysCount = count($days);
+			if($daysCount >= 7) $this->markGoalAsDone($pos, $type);
+		}
+
+		$weekDays = $daysCount ? "($daysCount/7)" : "";
+		return ["caption"=>"Usar la app los siete d&iacute;as de la semana $weekDays", "completed"=>$this->status[$pos], "link"=>""];
+	}
+
+	/**
+	 * goal GIVE FEEDBACK
+	 * 
+	 * @author salvipascual
+	 * @param Int $pos, position in this->status bit
+	 * @param String $type [initial, weekly]
+	 * */
+	private function goalGiveFeedback($pos, $type)
+	{
+		// if the goal is not ready, check completion
+		if( ! $this->status[$pos]) {
+			$count = Connection::query("
+				SELECT COUNT(id) AS cnt 
+				FROM delivery 
+				WHERE id_person={$this->request->personId} 
+				AND request_service = 'sugerencias' 
+				AND (request_subservice = 'crear' OR request_subservice = 'votar')");
+			if($count[0]->cnt >= 1) $this->markGoalAsDone($pos, $type);
+		}
+
+		return ["caption"=>"Escribir o votar por una Sugerencia", "completed"=>$this->status[$pos], "link"=>"SUGERENCIAS"];
+	}
+
+	/**
+	 * goal POST PIZARRA
+	 * 
+	 * @author salvipascual
+	 * @param Int $pos, position in this->status bit
+	 * @param String $type [initial, weekly]
+	 * */
+	private function goalPostPizarra($pos, $type)
+	{
+		// if the goal is not ready, check completion
+		if( ! $this->status[$pos]) {
+			$count = Connection::query("
+				SELECT COUNT(id) AS cnt 
+				FROM _pizarra_notes 
+				WHERE email = '{$this->request->email}' 
+				AND WEEK(inserted) = WEEK(CURRENT_TIMESTAMP)
+				AND YEAR(inserted) = YEAR(CURRENT_TIMESTAMP)");
+			if($count[0]->cnt >= 1) $this->markGoalAsDone($pos, $type);
+		}
+
+		return ["caption"=>"Escribir una nota en la Pizarra", "completed"=>$this->status[$pos], "link"=>"PIZARRA"];
+	}
+
+	/**
+	 * goal CHAT
+	 * 
+	 * @author salvipascual
+	 * @param Int $pos, position in this->status bit
+	 * @param String $type [initial, weekly]
+	 * */
+	private function goalChat($pos, $type)
+	{
+		// if the goal is not ready, check completion
+		if( ! $this->status[$pos]) {
+			$count = Connection::query("
+				SELECT COUNT(id) AS cnt 
+				FROM _note 
+				WHERE from_user = '{$this->request->email}' 
+				AND WEEK(send_date) = WEEK(CURRENT_TIMESTAMP)
+				AND YEAR(send_date) = YEAR(CURRENT_TIMESTAMP)");
+			if($count[0]->cnt >= 1) $this->markGoalAsDone($pos, $type);
+		}
+
+		return ["caption"=>"Chatear con otro usuario", "completed"=>$this->status[$pos], "link"=>"CHAT ONLINE"];
+	}
+
+	/**
+	 * goal PLAY RAFFLE
+	 * 
+	 * @author salvipascual
+	 * @param Int $pos, position in this->status bit
+	 * @param String $type [initial, weekly]
+	 * */
+	private function goalBuyRaffleTickets($pos, $type)
+	{
+		// if the goal is not ready, check completion
+		if( ! $this->status[$pos]) {
+			$count = Connection::query("
+				SELECT COUNT(ticket_id) AS cnt 
+				FROM ticket 
+				WHERE email = '{$this->request->email}' 
+				AND origin = 'PURCHASE' 
+				AND WEEK(creation_time) = WEEK(CURRENT_TIMESTAMP)
+				AND YEAR(creation_time) = YEAR(CURRENT_TIMESTAMP)");
+			if($count[0]->cnt >= 1) $this->markGoalAsDone($pos, $type);
+		}
+
+		return ["caption"=>"Comprar tickets para la Rifa", "completed"=>$this->status[$pos], "link"=>"RIFA"];
+	}
+
+
+
+	/**
+	 * Update a goal in the database
+	 * 
+	 * @author salvipascual
+	 * @param Int $pos, position in this->status bit
+	 * @param String $type [initial, weekly]
+	 * */
+	private function markGoalAsDone($pos, $type)
+	{
+		// change bit position on the goal
+		$this->status[$pos] = '1';
+
+		// change for initial goals
+		if($type == 'initial') {
+			Connection::query("
+				UPDATE _retos SET `status`='{$this->status}' 
+				WHERE person_id={$this->request->personId} 
+				AND `type`='initial'");
+		} 
+
+		// change for weekly goals
+		if($type == 'weekly') {
+			Connection::query("
+				UPDATE _retos SET `status`='{$this->status}' 
+				WHERE person_id={$this->request->personId} 
+				AND `type`='weekly' 
+				AND week_number=WEEK(CURRENT_TIMESTAMP)");
+		} 
 	}
 }
