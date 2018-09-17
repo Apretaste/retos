@@ -187,11 +187,11 @@ class Retos extends Service
 	{
 		// if the goal is not ready, check completion
 		if( ! $this->status[$pos]) {
-			$count = Connection::query("SELECT COUNT(id) AS cnt FROM delivery WHERE id_person={$this->request->personId} AND request_service='web' AND LOCATE('credito.apretaste.com', lower(request_query)) > 0");
+			$count = Connection::query("SELECT COUNT(id) AS cnt FROM delivery WHERE id_person={$this->request->personId} AND request_service='credito'");
 			if($count[0]->cnt >= 1) $this->markGoalAsDone($pos, $type);
 		}
 
-		return ["caption"=>"Leer las maneras de ganar credito", "completed"=>$this->status[$pos], "link"=>"CREDITOS"];
+		return ["caption"=>"Leer las maneras de ganar cr&eacute;ditos", "completed"=>$this->status[$pos], "link"=>"CREDITO"];
 	}
 
 	/**
