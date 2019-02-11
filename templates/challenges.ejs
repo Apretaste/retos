@@ -1,0 +1,19 @@
+<div class="row">
+	<div class="col s12">
+		<h1>Retos de la app</h1>
+		<p>Complete los siguientes retos y gane <b>§<%= credit.toFixed(2) %></b>.</p>
+
+		<ul class="collection">
+			<% goals.forEach(function(goal) { %>
+				<li class="collection-item">
+					<div>
+						<span class="<%= goal.completed==1 ? 'completed' : '' %>"><%= goal.caption %></span>
+						<% if (goal.completed == 0) { %>
+							<a class="secondary-content" href="#!" onclick="apretaste.send({'command':'<%= goal.link %>'})"><i class="material-icons">send</i></a>
+						<% } %>
+					</div>
+				</li>
+			<% }); %>
+		</ul>
+	</div>
+</div>

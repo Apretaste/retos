@@ -1,0 +1,13 @@
+<div class="row">
+	<div class="col s12 center">
+		<h1>Retos completados</h1>
+		<i class="material-icons large">pan_tool</i>
+		<p>¡Chócala! Has completado todos los retos y has ganado <b>§<%= credit.toFixed(2) %></b>.</p>
+
+		<% if(showBtn) { %>
+			<a class="waves-effect waves-light btn" href="#!" onclick="apretaste.send({'command':'RETOS'})">Más Retos</a>
+		<% }else{ %>
+			<p>Regrese el próximo Lunes para ver más retos y ganar más créditos.</p>
+		<% } %>
+	</div>
+</div>

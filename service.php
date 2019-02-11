@@ -1,6 +1,6 @@
 <?php
 
-class Retos extends Service
+class Service
 {
 	private $initialPrize = 2;
 	private $weeklyPrize = 1;
@@ -15,23 +15,26 @@ class Retos extends Service
 	 *
 	 * @author salvipascual
 	 * @param Request $request
-	 * @return Response
+	 * @param Response $response
 	 */
-	public function _main(Request $request)
+	public function _main(Request $request, Response $response)
 	{
+		// add request to the clase to be used for helper functions
+		$this->request = $request;
+
 		//
 		// INITIAL GOALS SECTION
 		//
 
 		// get the completion of the initial goals
-		$res = Connection::query("SELECT prize, `status` FROM _retos WHERE person_id={$request->userId} AND `type`='initial'");
+		$res = Connection::query("SELECT prize, `status` FROM _retos WHERE person_id={$request->person->id} AND `type`='initial'");
 		$this->status = isset($res[0]) ? $res[0]->status : false;
 		$prize = isset($res[0]) ? $res[0]->prize : 0;
 
 		// create row if do not exist
 		if( ! $this->status) {
 			$this->status = $this->initialEmptyStatus;
-			Connection::query("INSERT INTO _retos (person_id,`type`,`status`) VALUES ({$request->userId},'initial','{$this->status}')");
+			Connection::query("INSERT INTO _retos (person_id,`type`,`status`) VALUES ({$request->person->id},'initial','{$this->status}')");
 		}
 
 		// check status and complte goals
@@ -43,7 +46,7 @@ class Retos extends Service
 		$goals[] = $this->goalOpenSupport(4, 'initial');
 		$goals[] = $this->goalWhoReferedMe(5, 'initial');
 		$goals[] = $this->goalSurveys(6, 'initial');
-		$goals[] = $this->goalContests(7, 'initial');
+//		$goals[] = $this->goalContests(7, 'initial');
 		$goals[] = $this->goalPizarra(8, 'initial');
 		$goals[] = $this->goalRaffle(9, 'initial');
 
@@ -54,23 +57,15 @@ class Retos extends Service
 			if($prize == 0) {
 				// grant credits and mark prize as paid
 				Connection::query("
-					UPDATE person SET credit = credit + {$this->initialPrize} WHERE id={$request->userId};
-					UPDATE _retos SET prize=1 WHERE person_id={$request->userId} AND `type`='initial';
-				");
-	
+					UPDATE person SET credit = credit + {$this->initialPrize} WHERE id={$request->person->id};
+					UPDATE _retos SET prize=1 WHERE person_id={$request->person->id} AND `type`='initial';");
+
 				// tell user know the prize was granted
-				$response = new Response();
-				$response->setResponseSubject("Tus retos");
-				$response->createFromTemplate('completed.tpl', ["credit"=>$this->initialPrize, "showBtn"=>true]);
-				return $response;
+				return $response->setTemplate('completed.ejs', ["credit"=>$this->initialPrize, "showBtn"=>true]);
 			}
 		// if goals were not completed
 		} else {
-			// send information to the view
-			$response = new Response();
-			$response->setResponseSubject("Tus retos");
-			$response->createFromTemplate('challenges.tpl', ['goals'=>$goals, "credit"=>$this->initialPrize]);
-			return $response;
+			return $response->setTemplate('challenges.ejs', ['goals'=>$goals, "credit"=>$this->initialPrize]);
 		}
 
 		//
@@ -78,14 +73,14 @@ class Retos extends Service
 		//
 
 		// get the completion of the weekly goals
-		$res = Connection::query("SELECT prize, `status` FROM _retos WHERE person_id={$request->userId} AND `type`='weekly' AND week_number=WEEK(CURRENT_TIMESTAMP)");
+		$res = Connection::query("SELECT prize, `status` FROM _retos WHERE person_id={$request->person->id} AND `type`='weekly' AND week_number=WEEK(CURRENT_TIMESTAMP)");
 		$this->status = isset($res[0]) ? $res[0]->status : false;
 		$prize = isset($res[0]) ? $res[0]->prize : 0;
 
 		// create row if do not exist
 		if( ! $this->status) {
 			$this->status = $this->weeklyEmptyStatus;
-			Connection::query("INSERT INTO _retos (person_id,`type`,`status`,week_number) VALUES ({$request->userId},'weekly','{$this->status}',WEEK(CURRENT_TIMESTAMP))");
+			Connection::query("INSERT INTO _retos (person_id,`type`,`status`,week_number) VALUES ({$request->person->id},'weekly','{$this->status}',WEEK(CURRENT_TIMESTAMP))");
 		}
 
 		// check status and complete goals
@@ -93,7 +88,7 @@ class Retos extends Service
 		$goals[] = $this->goalAppUsage(0, 'weekly');
 		$goals[] = $this->goalGiveFeedback(1, 'weekly');
 		$goals[] = $this->goalPostPizarra(2, 'weekly');
-		$goals[] = $this->goalChat(3, 'weekly');
+//		$goals[] = $this->goalChat(3, 'weekly');
 		$goals[] = $this->goalReferFriend(4, 'weekly');
 		$goals[] = $this->goalBuyRaffleTickets(5, 'weekly');
 
@@ -102,23 +97,16 @@ class Retos extends Service
 			if($prize == 0) {
 				// grant credits and mark prize as paid
 				Connection::query("
-					UPDATE person SET credit = credit + {$this->weeklyPrize} WHERE id={$request->userId};
-					UPDATE _retos SET prize=1 WHERE person_id={$request->userId} AND `type`='weekly' AND week_number=WEEK(CURRENT_TIMESTAMP);
+					UPDATE person SET credit = credit + {$this->weeklyPrize} WHERE id={$request->person->id};
+					UPDATE _retos SET prize=1 WHERE person_id={$request->person->id} AND `type`='weekly' AND week_number=WEEK(CURRENT_TIMESTAMP);
 				");
 			}
 
 			// tell user goals were completed
-			$response = new Response();
-			$response->setResponseSubject("Tus retos");
-			$response->createFromTemplate('completed.tpl', ["credit"=>$this->weeklyPrize, "showBtn"=>false]);
-			return $response;
+			return $response->setTemplate('completed.ejs', ["credit"=>$this->weeklyPrize, "showBtn"=>false]);
 		// if goals were not completed
 		} else {
-			// send information to the view
-			$response = new Response();
-			$response->setResponseSubject("Tus retos");
-			$response->createFromTemplate('challenges.tpl', ['goals'=>$goals, "credit"=>$this->weeklyPrize]);
-			return $response;
+			return $response->setTemplate('challenges.ejs', ['goals'=>$goals, "credit"=>$this->weeklyPrize]);
 		}
 	}
 
@@ -133,7 +121,7 @@ class Retos extends Service
 	{
 		// if the goal is not ready, check completion
 		if( ! $this->status[$pos]) {
-			$count = Connection::query("SELECT COUNT(id) AS cnt FROM delivery WHERE id_person='{$this->request->userId}' AND request_service='terminos'");
+			$count = Connection::query("SELECT COUNT(id) AS cnt FROM delivery WHERE id_person='{$this->request->person->id}' AND request_service='terminos'");
 			if($count[0]->cnt >= 1) $this->markGoalAsDone($pos, $type);
 		}
 
@@ -151,7 +139,7 @@ class Retos extends Service
 	{
 		// if the goal is not ready, check completion
 		if( ! $this->status[$pos]) {
-			$count = Connection::query("SELECT COUNT(id) as cnt FROM person WHERE id='{$this->request->userId}' AND updated_by_user = 1");
+			$count = Connection::query("SELECT COUNT(id) as cnt FROM person WHERE id='{$this->request->person->id}' AND updated_by_user = 1");
 			if($count[0]->cnt >= 1) $this->markGoalAsDone($pos, $type);
 		}
 
@@ -169,11 +157,11 @@ class Retos extends Service
 	{
 		// if the goal is not ready, check completion
 		if( ! $this->status[$pos]) {
-			$count = Connection::query("SELECT COUNT(id) as cnt FROM person WHERE id='{$this->request->userId}' AND origin IS NOT NULL");
+			$count = Connection::query("SELECT COUNT(id) as cnt FROM person WHERE id='{$this->request->person->id}' AND origin IS NOT NULL");
 			if($count[0]->cnt >= 1) $this->markGoalAsDone($pos, $type);
 		}
 
-		return ["caption"=>"Dinos donde escuch&oacute; sobre la app", "completed"=>$this->status[$pos], "link"=>"PERFIL ORIGEN"];
+		return ["caption"=>"Dinos donde escuchó sobre la app", "completed"=>$this->status[$pos], "link"=>"PERFIL ORIGEN"];
 	}
 
 	/**
@@ -187,11 +175,11 @@ class Retos extends Service
 	{
 		// if the goal is not ready, check completion
 		if( ! $this->status[$pos]) {
-			$count = Connection::query("SELECT COUNT(id) AS cnt FROM delivery WHERE id_person={$this->request->userId} AND request_service='credito'");
+			$count = Connection::query("SELECT COUNT(id) AS cnt FROM delivery WHERE id_person={$this->request->person->id} AND request_service='credito'");
 			if($count[0]->cnt >= 1) $this->markGoalAsDone($pos, $type);
 		}
 
-		return ["caption"=>"Leer las maneras de ganar cr&eacute;ditos", "completed"=>$this->status[$pos], "link"=>"CREDITO"];
+		return ["caption"=>"Leer las maneras de ganar créditos", "completed"=>$this->status[$pos], "link"=>"CREDITO OBTENER"];
 	}
 
 	/**
@@ -205,7 +193,7 @@ class Retos extends Service
 	{
 		// if the goal is not ready, check completion
 		if( ! $this->status[$pos]) {
-			$count = Connection::query("SELECT COUNT(id) as cnt FROM delivery WHERE id_person={$this->request->userId} AND request_service = 'soporte'");
+			$count = Connection::query("SELECT COUNT(id) as cnt FROM delivery WHERE id_person={$this->request->person->id} AND request_service = 'soporte'");
 			if($count[0]->cnt >= 1) $this->markGoalAsDone($pos, $type);
 		}
 
@@ -223,7 +211,7 @@ class Retos extends Service
 	{
 		// if the goal is not ready, check completion
 		if( ! $this->status[$pos]) {
-			$count = Connection::query("SELECT count(id) as cnt FROM _referir WHERE user='{$this->request->email}'");
+			$count = Connection::query("SELECT count(id) as cnt FROM _referir WHERE user='{$this->request->person->email}'");
 			if($count[0]->cnt >= 1) $this->markGoalAsDone($pos, $type);
 		}
 
@@ -244,7 +232,7 @@ class Retos extends Service
 			$count = Connection::query("
 				SELECT COUNT(id) AS cnt 
 				FROM _referir 
-				WHERE father = '{$this->request->email}' 
+				WHERE father = '{$this->request->person->email}' 
 				AND WEEK(inserted) = WEEK(CURRENT_TIMESTAMP) 
 				AND YEAR(inserted) = YEAR(CURRENT_TIMESTAMP)");
 			if($count[0]->cnt >= 1) $this->markGoalAsDone($pos, $type);
@@ -264,7 +252,7 @@ class Retos extends Service
 	{
 		// if the goal is not ready, check completion
 		if( ! $this->status[$pos]) {
-			$count = Connection::query("SELECT COUNT(id) AS cnt FROM delivery WHERE id_person={$this->request->userId} AND request_service='encuesta'");
+			$count = Connection::query("SELECT COUNT(id) AS cnt FROM delivery WHERE id_person={$this->request->person->id} AND request_service='encuesta'");
 			if($count[0]->cnt >= 1) $this->markGoalAsDone($pos, $type);
 		}
 
@@ -282,7 +270,7 @@ class Retos extends Service
 	{
 		// if the goal is not ready, check completion
 		if( ! $this->status[$pos]) {
-			$count = Connection::query("SELECT COUNT(id) AS cnt FROM delivery WHERE id_person={$this->request->userId} AND request_service='concurso'");
+			$count = Connection::query("SELECT COUNT(id) AS cnt FROM delivery WHERE id_person={$this->request->person->id} AND request_service='concurso'");
 			if($count[0]->cnt >= 1) $this->markGoalAsDone($pos, $type);
 		}
 
@@ -300,7 +288,7 @@ class Retos extends Service
 	{
 		// if the goal is not ready, check completion
 		if( ! $this->status[$pos]) {
-			$count = Connection::query("SELECT COUNT(id) AS cnt FROM delivery WHERE id_person={$this->request->userId} AND request_service='pizarra'");
+			$count = Connection::query("SELECT COUNT(id) AS cnt FROM delivery WHERE id_person={$this->request->person->id} AND request_service='pizarra'");
 			if($count[0]->cnt >= 1) $this->markGoalAsDone($pos, $type);
 		}
 
@@ -318,7 +306,7 @@ class Retos extends Service
 	{
 		// if the goal is not ready, check completion
 		if( ! $this->status[$pos]) {
-			$count = Connection::query("SELECT COUNT(id) AS cnt FROM delivery WHERE id_person={$this->request->userId} AND request_service='rifa'");
+			$count = Connection::query("SELECT COUNT(id) AS cnt FROM delivery WHERE id_person={$this->request->person->id} AND request_service='rifa'");
 			if($count[0]->cnt >= 1) $this->markGoalAsDone($pos, $type);
 		}
 
@@ -341,7 +329,7 @@ class Retos extends Service
 			$days = Connection::query("
 				SELECT COUNT(id) AS nbr
 				FROM delivery 
-				WHERE id_person = {$this->request->userId}
+				WHERE id_person = {$this->request->person->id}
 				AND WEEK(request_date) = WEEK(CURRENT_TIMESTAMP)
 				AND YEAR(request_date) = YEAR(CURRENT_TIMESTAMP)
 				GROUP BY DATE(request_date)");
@@ -350,7 +338,7 @@ class Retos extends Service
 		}
 
 		$weekDays = $daysCount ? "($daysCount/7)" : "";
-		return ["caption"=>"Usar la app los siete d&iacute;as de la semana $weekDays", "completed"=>$this->status[$pos], "link"=>""];
+		return ["caption"=>"Usar la app los siete días de la semana $weekDays", "completed"=>$this->status[$pos], "link"=>""];
 	}
 
 	/**
@@ -367,7 +355,7 @@ class Retos extends Service
 			$count = Connection::query("
 				SELECT COUNT(id) AS cnt 
 				FROM delivery 
-				WHERE id_person={$this->request->userId} 
+				WHERE id_person={$this->request->person->id} 
 				AND request_service = 'sugerencias' 
 				AND (request_subservice = 'crear' OR request_subservice = 'votar')");
 			if($count[0]->cnt >= 1) $this->markGoalAsDone($pos, $type);
@@ -390,7 +378,7 @@ class Retos extends Service
 			$count = Connection::query("
 				SELECT COUNT(id) AS cnt 
 				FROM _pizarra_notes 
-				WHERE email = '{$this->request->email}' 
+				WHERE email = '{$this->request->person->email}' 
 				AND WEEK(inserted) = WEEK(CURRENT_TIMESTAMP)
 				AND YEAR(inserted) = YEAR(CURRENT_TIMESTAMP)");
 			if($count[0]->cnt >= 1) $this->markGoalAsDone($pos, $type);
@@ -413,7 +401,7 @@ class Retos extends Service
 			$count = Connection::query("
 				SELECT COUNT(id) AS cnt 
 				FROM _note 
-				WHERE from_user = '{$this->request->email}' 
+				WHERE from_user = '{$this->request->person->email}' 
 				AND WEEK(send_date) = WEEK(CURRENT_TIMESTAMP)
 				AND YEAR(send_date) = YEAR(CURRENT_TIMESTAMP)");
 			if($count[0]->cnt >= 1) $this->markGoalAsDone($pos, $type);
@@ -436,7 +424,7 @@ class Retos extends Service
 			$count = Connection::query("
 				SELECT COUNT(ticket_id) AS cnt 
 				FROM ticket 
-				WHERE email = '{$this->request->email}' 
+				WHERE email = '{$this->request->person->email}' 
 				AND origin = 'PURCHASE' 
 				AND WEEK(creation_time) = WEEK(CURRENT_TIMESTAMP)
 				AND YEAR(creation_time) = YEAR(CURRENT_TIMESTAMP)");
@@ -445,8 +433,6 @@ class Retos extends Service
 
 		return ["caption"=>"Comprar tickets para la Rifa", "completed"=>$this->status[$pos], "link"=>"RIFA"];
 	}
-
-
 
 	/**
 	 * Update a goal in the database
@@ -464,7 +450,7 @@ class Retos extends Service
 		if($type == 'initial') {
 			Connection::query("
 				UPDATE _retos SET `status`='{$this->status}' 
-				WHERE person_id={$this->request->userId} 
+				WHERE person_id={$this->request->person->id} 
 				AND `type`='initial'");
 		} 
 
@@ -472,7 +458,7 @@ class Retos extends Service
 		if($type == 'weekly') {
 			Connection::query("
 				UPDATE _retos SET `status`='{$this->status}' 
-				WHERE person_id={$this->request->userId} 
+				WHERE person_id={$this->request->person->id} 
 				AND `type`='weekly' 
 				AND week_number=WEEK(CURRENT_TIMESTAMP)");
 		} 
