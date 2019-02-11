@@ -7,10 +7,10 @@
 			<% goals.forEach(function(goal) { %>
 				<li class="collection-item">
 					<div>
-						<span class="<%= goal.completed==1 ? 'completed' : '' %>"><%= goal.caption %></span>
 						<% if (goal.completed == 0) { %>
 							<a class="secondary-content" href="#!" onclick="apretaste.send({'command':'<%= goal.link %>'})"><i class="material-icons">send</i></a>
 						<% } %>
+						<span class="<%= goal.completed==1 ? 'completed' : '' %>"><%= goal.caption %></span>
 					</div>
 				</li>
 			<% }); %>

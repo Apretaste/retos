@@ -215,7 +215,7 @@ class Service
 			if($count[0]->cnt >= 1) $this->markGoalAsDone($pos, $type);
 		}
 
-		return ["caption"=>"Referir a un amigo y ganar creditos", "completed"=>$this->status[$pos], "link"=>"REFERIR"];
+		return ["caption"=>"Referir a un amigo y ganar créditos", "completed"=>$this->status[$pos], "link"=>"REFERIR"];
 	}
 
 	/**
@@ -238,7 +238,7 @@ class Service
 			if($count[0]->cnt >= 1) $this->markGoalAsDone($pos, $type);
 		}
 
-		return ["caption"=>"Referir a un amigo y ganar creditos", "completed"=>$this->status[$pos], "link"=>"REFERIR"];
+		return ["caption"=>"Referir a un amigo y ganar créditos", "completed"=>$this->status[$pos], "link"=>"REFERIR"];
 	}
 
 	/**
@@ -256,7 +256,7 @@ class Service
 			if($count[0]->cnt >= 1) $this->markGoalAsDone($pos, $type);
 		}
 
-		return ["caption"=>"Ver las Encuestas activas y listas para ganar creditos", "completed"=>$this->status[$pos], "link"=>"ENCUESTA"];
+		return ["caption"=>"Ver las Encuestas activas y listas para ganar créditos", "completed"=>$this->status[$pos], "link"=>"ENCUESTA"];
 	}
 
 	/**
