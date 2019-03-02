@@ -17,7 +17,7 @@ class Service
 	 * @param Request $request
 	 * @param Response $response
 	 */
-	public function _main(Request $request, Response $response)
+	public function _main(Request $request, Response &$response)
 	{
 		// add request to the clase to be used for helper functions
 		$this->request = $request;
@@ -51,7 +51,7 @@ class Service
 		$goals[] = $this->goalRaffle(9, 'initial');
 
 		// if goals were completed today
-		if($this->status == $this->initialCompletedStatus) {
+		if($this->status == $this->initialCompletedStatus || $this->status = '1111111011') {
 			// if prize is given, passes to weekly
 			// if prize was not granted yet ...
 			if($prize == 0) {
