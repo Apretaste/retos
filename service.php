@@ -93,7 +93,7 @@ class Service
 		$goals[] = $this->goalBuyRaffleTickets(5, 'weekly');
 
 		// if goals were completed today
-		if($this->status == $this->weeklyCompletedStatus) {
+		if($this->status == $this->weeklyCompletedStatus || $this->status == '111011') {
 			if($prize == 0) {
 				// grant credits and mark prize as paid
 				Connection::query("
