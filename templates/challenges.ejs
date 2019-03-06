@@ -8,7 +8,7 @@
 				<li class="collection-item">
 					<div>
 						<% if (goal.completed == 0) { %>
-							<a class="secondary-content" href="#!" onclick="apretaste.send({command: goals[<%= i %>].link})"><i class="material-icons">send</i></a>
+							<a class="secondary-content green" href="#!" onclick="apretaste.send({command: goals[<%= i %>].link})"><i class="material-icons green">send</i></a>
 						<% } %>
 						<span class="<%= goal.completed==1 ? 'completed' : '' %>"><%= goal.caption %></span>
 					</div>
