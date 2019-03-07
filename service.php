@@ -86,14 +86,14 @@ class Service
 		// check status and complete goals
 		$goals = [];
 		$goals[] = $this->goalAppUsage(0, 'weekly');
-		$goals[] = $this->goalGiveFeedback(1, 'weekly');
+		//$goals[] = $this->goalGiveFeedback(1, 'weekly');
 		$goals[] = $this->goalPostPizarra(2, 'weekly');
 //		$goals[] = $this->goalChat(3, 'weekly');
 		$goals[] = $this->goalReferFriend(4, 'weekly');
 		$goals[] = $this->goalBuyRaffleTickets(5, 'weekly');
 
 		// if goals were completed today
-		if($this->status == $this->weeklyCompletedStatus || $this->status == '111011') {
+		if($this->status == $this->weeklyCompletedStatus || $this->status == '111011' || $this->status == '101011') {
 			if($prize == 0) {
 				// grant credits and mark prize as paid
 				Connection::query("

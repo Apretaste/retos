@@ -7,7 +7,7 @@
 			<% goals.forEach(function(goal, i) { %>
 				<li class="collection-item">
 					<div>
-						<% if (goal.completed == 0) { %>
+						<% if (goal.completed == 0 && goal.link != '') { %>
 							<a class="secondary-content text-green" href="#!" onclick="apretaste.send({command: goals[<%= i %>].link})"><i class="material-icons">send</i></a>
 						<% } %>
 						<span class="<%= goal.completed==1 ? 'completed' : '' %>"><%= goal.caption %></span>
