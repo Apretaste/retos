@@ -378,7 +378,7 @@ class Service
 			$count = Connection::query("
 				SELECT COUNT(id) AS cnt 
 				FROM _pizarra_notes 
-				WHERE email = '{$this->request->person->email}' 
+				WHERE id_person = '{$this->request->person->id}' 
 				AND WEEK(inserted) = WEEK(CURRENT_TIMESTAMP)
 				AND YEAR(inserted) = YEAR(CURRENT_TIMESTAMP)");
 			if($count[0]->cnt >= 1) $this->markGoalAsDone($pos, $type);
