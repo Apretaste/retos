@@ -238,7 +238,7 @@ class Service
 			if($count[0]->cnt >= 1) $this->markGoalAsDone($pos, $type);
 		}
 
-		return ["caption"=>"Referir a un amigo y ganar créditos", "completed"=>$this->status[$pos], "link"=>"REFERIR"];
+		return ["caption"=>"Ser referido por un amigo y ganar créditos", "completed"=>$this->status[$pos], "link"=>"REFERIR"];
 	}
 
 	/**
