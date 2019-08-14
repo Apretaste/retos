@@ -7,13 +7,13 @@
 			<b>Recuerda usar la app todos los d&iacute;as</b>.</p>
 
 		<ul class="collection">
-			<% goals.forEach(function(goal, i) { %>
+			<% for(var i =0; i< goals.length; i++) { %>
 				<li class="collection-item">
 					<div>
-						<% if (goal.completed == 0 && goal.link != '') { %>
+						<% if (goals[i].completed == 0 && goals[i].link != '') { %>
 							<a class="secondary-content text-green" href="#!" onclick="apretaste.send({command: goals[<%= i %>].link})"><i class="material-icons">send</i></a>
 						<% } %>
-						<span class="<%= goal.completed==1 ? 'completed' : '' %>"><%= goal.caption %></span>
+						<span class="<%= goals[i].completed==1 ? 'completed' : '' %>"><%= goals[i].caption %></span>
 					</div>
 				</li>
 			<% }); %>
