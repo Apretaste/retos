@@ -17,7 +17,7 @@ class Service
 
     private $status;
 
-    private $request;
+    public $request;
 
     /**
      * Main response
