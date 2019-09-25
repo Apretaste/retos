@@ -1,0 +1,36 @@
+<div class="row">
+	<div class="col s12">
+		<ul class="tabs tabs-fixed-width">
+			<li class="tab disabled"><a href="#" class="active">Reto del día</a></li>
+			<li class="tab"><a href="#" onclick="apretaste.send({command: 'RETOS DONE'})">Completados</a></li>
+		</ul>
+	</div>
+</div>
+
+<div class="row">
+	<div class="col s12 m6">
+		<div class="card blue-grey darken-1">
+			<div class="card-content white-text">
+				<i class="medium left material-icons"><%= icon %></i>
+				<span class="card-title"><%= title %> (§<%= credits %>)</span>
+				<p class="clear"><%= desc %></p>
+			</div>
+			<div class="card-action">
+				<a href="#" onclick="apretaste.send({command: '<%= link %>'})">Completar %></a>
+				<a class="modal-trigger" href="#skip">Saltar (§0.2)</a>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- Modal Structure -->
+<div id="skip" class="modal">
+	<div class="modal-content">
+		<h4>¡Cuidado!</h4>
+		<p>¿Está seguro que desea cambiar este reto por otro de la lista? Saltar retos tiene un costo de §0.2 crédiros.</p>
+	</div>
+	<div class="modal-footer">
+		<a href="#!" class="modal-close waves-effect waves-green btn-flat">Cerrar</a>
+		<a href="#!" class="waves-effect waves-green btn-flat" onclick="apretaste.send({command: 'RETOS SKIP'})">Saltar (§0.2)</a>
+	</div>
+</div>

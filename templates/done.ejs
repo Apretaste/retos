@@ -1,0 +1,24 @@
+<div class="row">
+	<div class="col s12">
+		<ul class="tabs tabs-fixed-width">
+			<li class="tab disabled"><a href="#" onclick="apretaste.send({command: 'RETOS OPEN'})">Reto del día</a></li>
+			<li class="tab disabled"><a href="#" class="active">Completados</a></li>
+		</ul>
+	</div>
+</div>
+
+<div class="row">
+	<div class="col s12">
+		<p>Estos retos fueron completados por usted. Hasta el momento ha ganado <b>§<%= total %></b> creditos.</p>
+
+		<ul class="collection">
+			<% challenges.forEach(function(challenge) { %>
+				<li class="collection-item avatar">
+					<i class="material-icons circle blue-grey"><%= challenge.icon %></i>
+					<span class="title"><%= challenge.title %> &middot; <b>§<%= challenge.credits %></b></span>
+					<p><small>Completado el <%= challenge.completed %></small></p>
+				</li>
+			<% }) %>
+		</ul>
+	</div>
+</div>
