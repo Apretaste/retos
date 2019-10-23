@@ -1,6 +1,6 @@
 <?php
 
-class Service
+class RetosService extends ApretasteService
 {
 	/**
 	 * Display the daily challenge
@@ -15,7 +15,7 @@ class Service
 		$content = Challenges::getCurrent($request->person->id);
 
 		// send data to the view
-		$response->setTemplate('open.ejs', (array) $content);
+		$this->response->setTemplate('open.ejs', (array) $content);
 	}
 
 	/**
