@@ -15,7 +15,7 @@ class Service
 		$content = Challenges::getCurrent($request->person->id);
 
 		// send data to the view
-		$response->setTemplate('open.ejs', $content);
+		$response->setTemplate('open.ejs', (array) $content);
 	}
 
 	/**
