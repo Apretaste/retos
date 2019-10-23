@@ -12,13 +12,13 @@
 		<p>Estos retos fueron completados por usted. Hasta el momento ha ganado <b>§<%= total %></b> creditos.</p>
 
 		<ul class="collection">
-			<% challenges.forEach(function(challenge) { %>
+			<% for(var i in challenges) { var challenge = challenges[i]; %>
 				<li class="collection-item avatar">
 					<i class="material-icons circle blue-grey"><%= challenge.icon %></i>
 					<span class="title"><%= challenge.title %> &middot; <b>§<%= challenge.prize %></b></span>
 					<p><small>Completado el <%= challenge.completed %></small></p>
 				</li>
-			<% }) %>
+			<% } %>
 		</ul>
 	</div>
 </div>
