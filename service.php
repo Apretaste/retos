@@ -18,6 +18,11 @@ class RetosService extends ApretasteService
 		$content['description'] = utf8_encode($content['description']);
 
 		// send data to the view
+		if (trim($content['completed']) !=='')
+		{
+			$this->response->setTemplate('closed.ejs', ['credits' => $content['prize']]);
+			return;
+		}
 		$this->response->setTemplate('open.ejs', $content);
 	}
 
