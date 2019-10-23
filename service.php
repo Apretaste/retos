@@ -12,10 +12,13 @@ class RetosService extends ApretasteService
 	 */
 	public function _main(Request $request, Response &$response)
 	{
-		$content = Challenges::getCurrent($request->person->id);
+		$content = (array) Challenges::getCurrent($request->person->id);
+
+		$content['name'] = utf8_encode($content['name']);
+		$content['description'] = utf8_encode($content['description']);
 
 		// send data to the view
-		$this->response->setTemplate('open.ejs', (array) $content);
+		$this->response->setTemplate('open.ejs', $content);
 	}
 
 	/**
