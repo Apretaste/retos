@@ -10,7 +10,7 @@ class Service
 	 *
 	 * @author salvipascual
 	 */
-	public function _main(Request $request, Response $response)
+	public function _main(Request $request, Response &$response)
 	{
 		$content = Challenges::getCurrent($request->person->id);
 
@@ -26,7 +26,7 @@ class Service
 	 *
 	 * @author salvipascual
 	 */
-	public function _done(Request $request, Response $response)
+	public function _done(Request $request, Response &$response)
 	{
 		$content = [
 			"total"      => Challenges::earned($request->person->id),
@@ -46,7 +46,7 @@ class Service
 	 * @throws \Exception
 	 * @author salvipascual
 	 */
-	public function _skip(Request $request, Response $response)
+	public function _skip(Request $request, Response &$response)
 	{
 		$result = Challenges::jump($request->person);
 		// if user do not have enough credits
