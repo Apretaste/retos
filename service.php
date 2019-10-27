@@ -14,8 +14,8 @@ class RetosService extends ApretasteService
 	{
 		$content = (array) Challenges::getCurrent($request->person->id);
 
-		$content['name'] = utf8_encode($content['name']);
-		$content['description'] = utf8_encode($content['description']);
+		//$content['name'] = utf8_encode($content['name']);
+		//$content['description'] = utf8_encode($content['description']);
 
 		// send data to the view
 		if (trim($content['completed']) !=='')
