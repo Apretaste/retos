@@ -55,7 +55,7 @@ class RetosService extends ApretasteService
 	 */
 	public function _skip(Request $request, Response &$response)
 	{
-		$result = Challenges::jump($request->person);
+		$result = Challenges::jump($request->person->id);
 		// if user do not have enough credits
 		if ($result===false) {
 			$response->setTemplate('message.ejs', [
