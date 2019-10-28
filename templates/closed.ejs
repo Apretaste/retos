@@ -9,7 +9,7 @@
 
 <div class="row">
 	<div class="col s12">
-		<p>Usted ha completado el reto de hoy y ha ganado §<%= prize %> créditos. Puede completar otro reto mañana.</p>
+		<p>Usted ha completado el reto de hoy y ha ganado <%= formatCredit(prize) %> créditos. Puede completar otro reto mañana.</p>
 	</div>
 </div>
 
@@ -19,7 +19,7 @@
 			<div class="card-content white-text">
 				<i class="medium left material-icons"><%= icon %></i>
 				<span class="card-title completed"><%= name %></span>
-				<p class="clear">Usted ganó §<%= prize %></p>
+				<p class="clear">Usted ganó <%= formatCredit(prize) %></p>
 			</div>
 		</div>
 	</div>
