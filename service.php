@@ -19,9 +19,11 @@ class RetosService extends ApretasteService
 
 		// send data to the view
 		if (trim($content['completed']) !=='') {
+			$this->response->setCache('day');
 			$this->response->setTemplate('closed.ejs', $content);
 			return;
 		}
+
 		$this->response->setTemplate('open.ejs', $content);
 	}
 
@@ -41,6 +43,7 @@ class RetosService extends ApretasteService
 		];
 
 		// send data to the view
+		$response->setCache('day');
 		$response->setTemplate('done.ejs', $content);
 	}
 

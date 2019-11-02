@@ -9,6 +9,7 @@
 
 <div class="row">
 	<div class="col s12">
+		<% if (challenges.length >0) { %>
 		<p>Estos retos fueron completados por usted. Hasta el momento ha ganado <b><%= formatCredit(total) %></b> creditos.</p>
 
 		<ul class="collection">
@@ -16,9 +17,12 @@
 				<li class="collection-item avatar">
 					<i class="material-icons circle blue-grey"><%= challenge.icon %></i>
 					<span class="title"><%= challenge.name %> &middot; <b><%= formatCredit(challenge.earned) %></b></span>
-					<p><small>Completado el <%= challenge.completed %></small></p>
+					<p><small>Completado el <%= formatDateTime(challenge.completed) %></small></p>
 				</li>
 			<% } %>
 		</ul>
+		<% } else {%>
+			<p>Usted aún no ha completado ningún reto.</p>
+		<% }%>
 	</div>
 </div>
