@@ -16,7 +16,7 @@
 				<p class="clear"><%= description %></p>
 			</div>
 			<div class="card-action">
-				<a href="#" onclick="apretaste.send({command: '<%= command %>'})">Completar %></a>
+				<a href="#" onclick="apretaste.send({command: '<%= command %>', data: {seed: (new Date()).getTime()}})">Completar %></a>
 				<a class="modal-trigger" href="#skip">Saltar (§0.2)</a>
 			</div>
 		</div>
