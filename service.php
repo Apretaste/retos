@@ -21,7 +21,6 @@ class Service
 
 		// send data to the view
 		$response->setTemplate('open.ejs', $content);
-//		$response->setTemplate('closed.ejs', $content);
 	}
 
 	/**
