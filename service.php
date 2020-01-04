@@ -1,6 +1,10 @@
 <?php
 
-class RetosService extends ApretasteService
+use Apretaste\Request;
+use Apretaste\Response;
+use Apretaste\Challenges;
+
+class Service
 {
 	/**
 	 * Display the daily challenge
@@ -8,6 +12,7 @@ class RetosService extends ApretasteService
 	 * @param Request  $request
 	 * @param Response $response
 	 *
+	 * @throws \Framework\Alert
 	 * @author salvipascual
 	 */
 	public function _main(Request $request, Response &$response)
@@ -19,12 +24,12 @@ class RetosService extends ApretasteService
 
 		// send data to the view
 		if (trim($content['completed']) !=='') {
-			$this->response->setCache('day');
-			$this->response->setTemplate('closed.ejs', $content);
+			$response->setCache('day');
+			$response->setTemplate('closed.ejs', $content);
 			return;
 		}
 
-		$this->response->setTemplate('open.ejs', $content);
+		$response->setTemplate('open.ejs', $content);
 	}
 
 	/**
@@ -33,6 +38,7 @@ class RetosService extends ApretasteService
 	 * @param Request  $request
 	 * @param Response $response
 	 *
+	 * @throws \Framework\Alert
 	 * @author salvipascual
 	 */
 	public function _done(Request $request, Response &$response)
