@@ -9,7 +9,7 @@ class Service
 	/**
 	 * Display the daily challenge
 	 *
-	 * @param Request  $request
+	 * @param Request $request
 	 * @param Response $response
 	 *
 	 * @throws \Framework\Alert
@@ -23,7 +23,7 @@ class Service
 		//$content['description'] = utf8_encode($content['description']);
 
 		// send data to the view
-		if (trim($content['completed']) !=='') {
+		if (trim($content['completed']) !== '') {
 			$response->setCache('day');
 			$response->setTemplate('closed.ejs', $content);
 			return;
@@ -35,7 +35,7 @@ class Service
 	/**
 	 * Display the challenges completed
 	 *
-	 * @param Request  $request
+	 * @param Request $request
 	 * @param Response $response
 	 *
 	 * @throws \Framework\Alert
@@ -44,7 +44,7 @@ class Service
 	public function _done(Request $request, Response &$response)
 	{
 		$content = [
-			"total"      => Challenges::earned($request->person->id),
+			"total" => Challenges::earned($request->person->id),
 			"challenges" => Challenges::history($request->person->id)
 		];
 
@@ -56,7 +56,7 @@ class Service
 	/**
 	 * Skips the current challenge and charges the user
 	 *
-	 * @param Request  $request
+	 * @param Request $request
 	 * @param Response $response
 	 *
 	 * @throws \Exception
@@ -66,11 +66,11 @@ class Service
 	{
 		$result = Challenges::jump($request->person->id);
 		// if user do not have enough credits
-		if ($result===false) {
+		if ($result === false) {
 			$response->setTemplate('message.ejs', [
 				'header' => 'No tiene créditos',
-				'icon'   => 'sentiment_very_dissatisfied',
-				'text'   => 'Usted no tiene §0.2 de crédito que cuesta saltar un reto, por lo cual no pudimos continuar.',
+				'icon' => 'sentiment_very_dissatisfied',
+				'text' => 'Usted no tiene §0.2 de crédito que cuesta saltar un reto, por lo cual no pudimos continuar.',
 			]);
 
 			return;
