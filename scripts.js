@@ -18,7 +18,7 @@ function pad(n, width, z) {
 function formatDateTime(dateStr) {
 	var date = new Date(dateStr);
 	var month = date.getMonth() +  1;
-	var day = pad(date.getDay(),2);
+	var day = pad(date.getDate(),2);
 	var hour = (date.getHours() < 12) ? date.getHours() : date.getHours() - 12;
 	var minutes = date.getMinutes();
 	if (minutes < 10) {
