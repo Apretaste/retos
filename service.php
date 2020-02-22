@@ -3,6 +3,7 @@
 use Apretaste\Request;
 use Apretaste\Response;
 use Apretaste\Challenges;
+use Framework\Alert;
 
 class Service
 {
@@ -64,7 +65,13 @@ class Service
 	 */
 	public function _skip(Request $request, Response &$response)
 	{
-		$result = Challenges::jump($request->person->id);
+		$result = false;
+		try {
+			$result = Challenges::jump($request->person->id);
+		} catch(Alert $alert) {
+
+		}
+
 		// if user do not have enough credits
 		if ($result === false) {
 			$response->setTemplate('message.ejs', [
