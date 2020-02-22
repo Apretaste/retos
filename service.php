@@ -25,7 +25,7 @@ class Service
 
 		// send data to the view
 		if (trim($content['completed']) !== '') {
-			$response->setCache('day');
+			//$response->setCache('day');
 			$response->setTemplate('closed.ejs', $content);
 			return;
 		}
@@ -50,7 +50,7 @@ class Service
 		];
 
 		// send data to the view
-		$response->setCache('day');
+		//$response->setCache('day');
 		$response->setTemplate('done.ejs', $content);
 	}
 
