@@ -68,8 +68,13 @@ class Service
 		$result = false;
 		try {
 			$result = Challenges::jump($request->person->id);
-		} catch(Alert $alert) {
-
+		} catch(Exception $alert) {
+			$response->setTemplate('message.ejs', [
+			  'header' => 'Ha ocurrido un error',
+			  'icon' => 'sentiment_very_dissatisfied',
+			  'text' => 'El equipo t&eacute;nico ha sido notificado'
+			]);
+			throw $alert;
 		}
 
 		// if user do not have enough credits
