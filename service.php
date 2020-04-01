@@ -3,6 +3,7 @@
 use Apretaste\Request;
 use Apretaste\Response;
 use Apretaste\Challenges;
+use Framework\Alert;
 
 class Service
 {
@@ -11,11 +12,9 @@ class Service
 	 *
 	 * @param Request $request
 	 * @param Response $response
-	 *
-	 * @throws \Framework\Alert
 	 * @author salvipascual
 	 */
-	public function _main(Request $request, Response &$response)
+	public function _main(Request $request, Response $response)
 	{
 		$content = (array) Challenges::getCurrent($request->person->id);
 
@@ -24,7 +23,7 @@ class Service
 
 		// send data to the view
 		if (trim($content['completed']) !== '') {
-			$response->setCache('day');
+			//$response->setCache('day');
 			$response->setTemplate('closed.ejs', $content);
 			return;
 		}
@@ -37,11 +36,9 @@ class Service
 	 *
 	 * @param Request $request
 	 * @param Response $response
-	 *
-	 * @throws \Framework\Alert
 	 * @author salvipascual
 	 */
-	public function _done(Request $request, Response &$response)
+	public function _done(Request $request, Response $response)
 	{
 		$content = [
 			"total" => Challenges::earned($request->person->id),
@@ -49,7 +46,7 @@ class Service
 		];
 
 		// send data to the view
-		$response->setCache('day');
+		//$response->setCache('day');
 		$response->setTemplate('done.ejs', $content);
 	}
 
@@ -58,13 +55,22 @@ class Service
 	 *
 	 * @param Request $request
 	 * @param Response $response
-	 *
-	 * @throws \Exception
 	 * @author salvipascual
 	 */
-	public function _skip(Request $request, Response &$response)
+	public function _skip(Request $request, Response $response)
 	{
-		$result = Challenges::jump($request->person->id);
+		$result = false;
+		try {
+			$result = Challenges::jump($request->person->id);
+		} catch(Exception $alert) {
+			$response->setTemplate('message.ejs', [
+			  'header' => 'Ha ocurrido un error',
+			  'icon' => 'sentiment_very_dissatisfied',
+			  'text' => 'El equipo t&eacute;nico ha sido notificado'
+			]);
+			throw $alert;
+		}
+
 		// if user do not have enough credits
 		if ($result === false) {
 			$response->setTemplate('message.ejs', [

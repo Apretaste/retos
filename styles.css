@@ -5,3 +5,10 @@
 .clear{
 	clear:both;
 }
+
+.message-gray {
+    position: absolute;
+    top: 50%;
+    left: calc(50% - 160px);
+    color: gray;
+}
