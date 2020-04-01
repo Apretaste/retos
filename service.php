@@ -60,6 +60,7 @@ class Service
 	public function _skip(Request $request, Response $response)
 	{
 		$result = false;
+
 		try {
 			$result = Challenges::jump($request->person->id);
 		} catch(Exception $alert) {
@@ -78,7 +79,6 @@ class Service
 				'icon' => 'sentiment_very_dissatisfied',
 				'text' => 'Usted no tiene §0.2 de crédito que cuesta saltar un reto, por lo cual no pudimos continuar.',
 			]);
-
 			return;
 		}
 
