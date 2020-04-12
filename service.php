@@ -3,15 +3,17 @@
 use Apretaste\Request;
 use Apretaste\Response;
 use Apretaste\Challenges;
-use Framework\Alert;
 
 class Service
 {
+
 	/**
 	 * Display the daily challenge
 	 *
 	 * @param Request $request
 	 * @param Response $response
+	 *
+	 * @throws \Framework\Alert
 	 * @author salvipascual
 	 */
 	public function _main(Request $request, Response $response)
@@ -36,13 +38,15 @@ class Service
 	 *
 	 * @param Request $request
 	 * @param Response $response
+	 *
+	 * @throws \Framework\Alert
 	 * @author salvipascual
 	 */
 	public function _done(Request $request, Response $response)
 	{
 		$content = [
-			"total" => Challenges::earned($request->person->id),
-			"challenges" => Challenges::history($request->person->id)
+			'total' => Challenges::earned($request->person->id),
+			'challenges' => Challenges::history($request->person->id)
 		];
 
 		// send data to the view
@@ -55,6 +59,10 @@ class Service
 	 *
 	 * @param Request $request
 	 * @param Response $response
+	 *
+	 * @throws \FeedException
+	 * @throws \Framework\Alert
+	 * @throws \Exception
 	 * @author salvipascual
 	 */
 	public function _skip(Request $request, Response $response)
@@ -63,7 +71,7 @@ class Service
 
 		try {
 			$result = Challenges::jump($request->person->id);
-		} catch(Exception $alert) {
+		} catch (Exception $alert) {
 			$response->setTemplate('message.ejs', [
 			  'header' => 'Ha ocurrido un error',
 			  'icon' => 'sentiment_very_dissatisfied',
