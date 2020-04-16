@@ -82,11 +82,19 @@ class Service
 
 		// if user do not have enough credits
 		if ($result === false) {
-			$response->setTemplate('message.ejs', [
-				'header' => 'No tiene créditos',
-				'icon' => 'sentiment_very_dissatisfied',
-				'text' => 'Usted no tiene §0.2 de crédito que cuesta saltar un reto, por lo cual no pudimos continuar.',
-			]);
+			if ($request->person->credit ?? 0 < 0.2) {
+				$response->setTemplate('message.ejs', [
+					'header' => 'No tiene créditos',
+					'icon' => 'sentiment_very_dissatisfied',
+					'text' => 'Usted no tiene §0.2 de crédito que cuesta saltar un reto, por lo cual no pudimos continuar.',
+				]);
+			} else {
+				$response->setTemplate('message.ejs', [
+				  'header' => 'Ha ocurrido un error',
+				  'icon' => 'sentiment_very_dissatisfied',
+				  'text' => 'No se pudo saltar el reto. Espere a mañana.'
+				]);
+			}
 			return;
 		}
 
