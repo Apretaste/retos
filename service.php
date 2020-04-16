@@ -82,7 +82,7 @@ class Service
 
 		// if user do not have enough credits
 		if ($result === false) {
-			if ($request->person->credit ?? 0 < 0.2) {
+			if (($request->person->credit ?? 0) < 0.2) {
 				$response->setTemplate('message.ejs', [
 					'header' => 'No tiene créditos',
 					'icon' => 'sentiment_very_dissatisfied',
