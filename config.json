@@ -1,8 +1,9 @@
 {
 	"name": "retos",
-	"version": 4,
 	"description": "Muestra un reto nuevo cada día, vuelve la app más entretenida, y regala créditos.",
 	"category": "ocio",
 	"creator": "salvi@apretaste.org",
-	"listed": true
+	"listed": true,
+	"guest": true,
+	"caption": "Retos"
 }
