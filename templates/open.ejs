@@ -13,7 +13,7 @@
 		<div class="card">
 			<div class="card-content">
 				<i class="medium left material-icons"><%= item.icon %></i>
-				<span class="card-title"><%= item.name %> (<%= formatCredit(item.prize) %>)</span>
+				<span class="card-title <%= item.completed ? 'completed' : '' %>"><%= item.name %> (<%= formatCredit(item.prize) %>)</span>
 				<p class="clear"><%= item.description %></p>
 			</div>
 			<div class="card-action">
