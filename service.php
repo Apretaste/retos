@@ -42,6 +42,11 @@ class Service
 		]);
 	}
 
+	public function _quitar(Request $request, Response $response) {
+	    Challenges::remove($request->person->id, $request->input->data->challenge);
+	    return $this->_main($request, $response);
+    }
+
 	/**
 	 * Display the challenges completed
 	 *

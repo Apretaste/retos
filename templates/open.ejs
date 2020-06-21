@@ -17,7 +17,10 @@
 				<p class="clear"><%= item.description %></p>
 			</div>
 			<div class="card-action">
-				<a href="#" onclick="apretaste.send({command: '<%= item.command %>', data: {seed: (new Date()).getTime()}})">Completar %></a>
+				<a href="#" onclick="apretaste.send({command: '<%= item.command %>', data: {seed: (new Date()).getTime()}})">Completar</a>
+			</div>
+			<div class="card-action">
+				<a href="#" onclick="apretaste.send({command: 'RETOS QUITAR', data: {challenge: <%= item.id %>}})">Quitar</a>
 			</div>
 		</div>
 	</div>
