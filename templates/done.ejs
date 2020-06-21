@@ -10,17 +10,21 @@
 <div class="row">
 	<div class="col s12">
 		<% if (challenges.length >0) { %>
-		<p>Estos retos fueron completados por usted. Hasta el momento ha ganado <b><%= formatCredit(total) %></b> créditos.</p>
-
-		<ul class="collection">
-			<% for(var i in challenges) { var challenge = challenges[i]; %>
-				<li class="collection-item avatar">
-					<i class="material-icons circle blue-grey"><%= challenge.icon %></i>
-					<span class="title"><%= challenge.name %> &middot; <b><%= formatCredit(challenge.earned) %></b></span>
-					<p><small>Completado el <%= formatDateTime(challenge.completed) %></small></p>
-				</li>
+			<p>Estos retos fueron completados por usted. Hasta el momento ha ganado <b><%= formatCredit(total) %></b> créditos.</p>
+			<% for(var i in challenges) { var item = challenges[i]; %>
+			<div class="row">
+				<div class="col s12 m6">
+					<div class="card">
+						<div class="card-content">
+							<i class="medium left material-icons"><%= item.icon %></i>
+							<span class="card-title <%= item.done ? 'completed' : '' %>"><%= item.name %> (<%= formatCredit(item.earned) %>)</span>
+							<p class="clear"><%= item.description %></p>
+							<p><small>Completado el <%= formatDateTime(challenge.completed) %></small></p>
+						</div>
+					</div>
+				</div>
+			</div>
 			<% } %>
-		</ul>
 		<% } else {%>
 			<p class="message-gray">Usted aún no ha completado ningún reto.</p>
 		<% } %>
