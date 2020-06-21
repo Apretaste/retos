@@ -11,11 +11,11 @@
 	<% for(var i in challenges) { var challenge = challenges[i]; %>
 	<li class="collection-item avatar">
 		<i class="material-icons circle blue-grey"><%= challenge.icon %></i>
-		<span class="title <%= challenge.done ? 'completed' : '' %>"><%= challenge.name %> &middot; <b><%= formatCredit(challenge.prize) %></b></span>
+		<span class="title <%= challenge.done ? 'completed' : '' %>"><b><%= formatCredit(challenge.prize) %></b> &middot; <%= challenge.name %> </span>
 		<p class="clear"><%= challenge.description %></p>
 		<% if(!challenge.done) { %>
 			<a href="#" onclick="apretaste.send({command: '<%= challenge.command %>', data: {seed: (new Date()).getTime()}})">Completar</a>
-			<a href="#" onclick="apretaste.send({command: 'RETOS QUITAR', data: {challenge: <%= challenge.id %>}})">Quitar</a>
+			&nbsp;<a href="#" onclick="apretaste.send({command: 'RETOS QUITAR', data: {challenge: <%= challenge.id %>}})">Quitar</a>
 		<% } %>
 	</li>
 	<% } %>
