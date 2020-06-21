@@ -8,24 +8,34 @@
 </div>
 
 <% for(var i in challenges) { var item = challenges[i]; %>
-<div class="row">
-	<div class="col s12 m6">
-		<div class="card">
-			<div class="card-content">
-				<i class="medium left material-icons"><%= item.icon %></i>
-				<span class="card-title <%= item.done ? 'completed' : '' %>"><%= item.name %> (<%= formatCredit(item.prize) %>)</span>
-				<p class="clear"><%= item.description %></p>
+	<% if (item.done) { %>
+	<div class="row">
+		<div class="col s12 m6">
+			<div class="card">
+				<p class="message-gray">Ma&ntilde;ana tendr&aacute;s otro reto aqu&iacute;</p>
 			</div>
-			<div class="card-action">
-				<% if(!item.done) { %>
-					<a href="#" onclick="apretaste.send({command: '<%= item.command %>', data: {seed: (new Date()).getTime()}})">Completar</a>
-					<a href="#" onclick="apretaste.send({command: 'RETOS QUITAR', data: {challenge: <%= item.id %>}})">Quitar</a>
-				<% } %>
-			</div>
-
 		</div>
 	</div>
-</div>
+	<% } else {%>
+		<div class="row">
+			<div class="col s12 m6">
+				<div class="card">
+					<div class="card-content">
+						<i class="medium left material-icons"><%= item.icon %></i>
+						<span class="card-title"><%= item.name %> (<%= formatCredit(item.prize) %>)</span>
+						<p class="clear"><%= item.description %></p>
+					</div>
+					<div class="card-action">
+						<% if(!item.done) { %>
+							<a href="#" onclick="apretaste.send({command: '<%= item.command %>', data: {seed: (new Date()).getTime()}})">Completar</a>
+							<a href="#" onclick="apretaste.send({command: 'RETOS QUITAR', data: {challenge: <%= item.id %>}})">Quitar</a>
+						<% } %>
+					</div>
+
+				</div>
+			</div>
+		</div>
+	<% } %>
 <% } %>
 
 <!-- Modal Structure -->

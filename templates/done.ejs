@@ -17,7 +17,7 @@
 					<div class="card">
 						<div class="card-content">
 							<i class="medium left material-icons"><%= item.icon %></i>
-							<span class="card-title <%= item.done ? 'completed' : '' %>"><%= item.name %> (<%= formatCredit(item.earned) %>)</span>
+							<span class="card-title"><%= item.name %> (<%= formatCredit(item.earned) %>)</span>
 							<p class="clear"><%= item.description %></p>
 							<p><small>Completado el <%= formatDateTime(challenge.completed) %></small></p>
 						</div>
