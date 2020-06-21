@@ -13,11 +13,11 @@
 		<div class="card">
 			<div class="card-content">
 				<i class="medium left material-icons"><%= item.icon %></i>
-				<span class="card-title <%= item.completed ? 'completed' : '' %>"><%= item.name %> (<%= formatCredit(item.prize) %>)</span>
+				<span class="card-title <%= item.done ? 'completed' : '' %>"><%= item.name %> (<%= formatCredit(item.prize) %>)</span>
 				<p class="clear"><%= item.description %></p>
 			</div>
 			<div class="card-action">
-				<% if(!item.completed) { %>
+				<% if(!item.done) { %>
 					<a href="#" onclick="apretaste.send({command: '<%= item.command %>', data: {seed: (new Date()).getTime()}})">Completar</a>
 					<a href="#" onclick="apretaste.send({command: 'RETOS QUITAR', data: {challenge: <%= item.id %>}})">Quitar</a>
 				<% } %>
