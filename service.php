@@ -18,6 +18,13 @@ class Service
 	 */
 	public function _main(Request $request, Response $response)
 	{
+		// add challenges
+		Challenges::addChallenges($request->person->id);
+
+		// get list of challenges
+		$challenges = Challenges::getList($request->person->id);
+
+		/*
 		$content = (array) Challenges::getCurrent($request->person->id);
 
 		//$content['name'] = utf8_encode($content['name']);
@@ -29,8 +36,10 @@ class Service
 			$response->setTemplate('closed.ejs', $content);
 			return;
 		}
-
-		$response->setTemplate('open.ejs', $content);
+*/
+		$response->setTemplate('open.ejs', [
+			'challenges' => $challenges
+		]);
 	}
 
 	/**
