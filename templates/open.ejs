@@ -19,13 +19,13 @@
 				<div class="card">
 					<div class="card-content">
 						<i class="medium left material-icons"><%= item.icon %></i>
-						<span class="card-title"><%= item.name %> (<%= formatCredit(item.prize) %>)</span>
-						<p class="blue-grey-text"><%= item.description %></p>
+						<span class="card-title"><%= item.name %></span>
+						<p class="blue-grey-text">Ganar&aacute; <%= formatCredit(item.prize) %></p>
 					</div>
 					<div class="card-action grey lighten-4">
 						<% if(!item.done) { %>
 							<a class="green-text" href="#" onclick="apretaste.send({command: '<%= item.command %>', data: {seed: (new Date()).getTime()}})">Completar</a>
-							<a class="red-text" href="#" onclick="apretaste.send({command: 'RETOS QUITAR', data: {challenge: <%= item.id %>}})">Quitar</a>
+							<a class="red-text" href="#" onclick="remove(<%= item.id %>);">Quitar</a>
 						<% } %>
 					</div>
 				</div>
@@ -33,14 +33,15 @@
 		<% } %>
 	</div>
 </div>
+
 <!-- Modal Structure -->
 <div id="skip" class="modal">
 	<div class="modal-content">
 		<h4>¡Cuidado!</h4>
-		<p>¿Está seguro que desea cambiar este reto por otro de la lista? Saltar retos tiene un costo de §0.2 crédiros.</p>
+		<p>¿Está seguro que desea quitar este reto?</p>
 	</div>
 	<div class="modal-footer">
 		<a href="#!" class="modal-close waves-effect waves-green btn-flat">Cerrar</a>
-		<a href="#!" class="waves-effect waves-green btn-flat" onclick="apretaste.send({command: 'RETOS SKIP'})">Saltar (§0.2)</a>
+		<a href="#!" class="waves-effect waves-green btn-flat" id="remove-action">Quitar</a>
 	</div>
 </div>

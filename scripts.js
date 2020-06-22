@@ -27,3 +27,13 @@ function formatDateTime(dateStr) {
 	var amOrPm = (date.getHours() < 12) ? "am" : "pm";
 	return day + '/' + pad(month,2) + '/' + date.getFullYear() + ' ' + hour + ':' + minutes + amOrPm;
 }
+
+function remove(id){
+	$("#skip").modal('open');
+	var removeAction = $("#remove-action");
+	removeAction.prop("onclick", null).unbind("click");
+	removeAction.prop("onclick", null).off("click");
+	removeAction.click(function(){
+		apretaste.send({command: 'RETOS QUITAR', data: {challenge: id}});
+	});
+}
