@@ -38,14 +38,16 @@ class Service
 		}
 */
 		$response->setTemplate('open.ejs', [
-			'challenges' => $challenges
+			'challenges' => $challenges,
+			'serveerTime' => date("Y-m-d h:i:s")
 		]);
 	}
 
-	public function _quitar(Request $request, Response $response) {
-	    Challenges::remove($request->person->id, $request->input->data->challenge);
-	    return $this->_main($request, $response);
-    }
+	public function _quitar(Request $request, Response $response)
+	{
+		Challenges::remove($request->person->id, $request->input->data->challenge);
+		return $this->_main($request, $response);
+	}
 
 	/**
 	 * Display the challenges completed
@@ -114,4 +116,8 @@ class Service
 
 		$this->_main($request, $response);
 	}
+
+	public function _ayuda(Request $request, Response $response) {
+	    $response->setTemplate('help.ejs');
+    }
 }
