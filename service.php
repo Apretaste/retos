@@ -39,7 +39,7 @@ class Service
 */
 		$response->setTemplate('open.ejs', [
 			'challenges' => $challenges,
-			'serverTime' => date("Y-m-d h:i:s")
+			'serverTime' => date("Y-m-d H:i:s")
 		]);
 	}
 
@@ -63,7 +63,7 @@ class Service
 		$content = [
 			'total' => Challenges::earned($request->person->id),
 			'challenges' => Challenges::history($request->person->id),
-			'serverTime' => date("Y-m-d h:i:s")
+			'serverTime' => date("Y-m-d H:i:s")
 		];
 
 		// send data to the view

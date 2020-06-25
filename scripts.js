@@ -2,10 +2,15 @@ $(document).ready(function(){
 	$('.tabs').tabs();
 	$('.modal').modal();
 
-	var serverTime  = new moment($("#serverTime").val());
-	var now = new moment(moment.now());
+	/*
+	var sVal = $("#serverTime").val();
+	if (typeof sVal != 'undefined') {
+		var serverTime  = new moment(sVal);
+		var now = new moment(moment.now());
 
-	//if (now.diff(serverTime, 'sec') > 30) apretaste.send({command: 'RETOS'});
+		//if (now.diff(serverTime, 'sec') > 30) apretaste.send({command: 'RETOS'});
+	}*/
+
 });
 
 function formatCredit(credit) {
