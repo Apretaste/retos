@@ -1,39 +1,11 @@
 $(document).ready(function(){
 	$('.tabs').tabs();
 	$('.modal').modal();
-
-	/*var sVal = $("#serverTime").val();
-	if (typeof sVal != 'undefined') {
-		var serverTime  = new moment(sVal);
-		var now = new moment(moment.now());
-		var diff = now.diff(serverTime, 'seconds');
-		if ( diff >= 60 && diff <= 5 * 60) apretaste.send({command: 'RETOS'});
-	}*/
 });
 
 function formatCredit(credit) {
 	credit = Math.round(credit * 100) / 100;
 	return "§" + credit;
-}
-
-function pad(n, width, z) {
-	z = z || '0';
-	n = n + '';
-	return n.length >= width ? n : new Array(width - n.length + 1).join(z) + n;
-}
-
-// formats a date and time
-function formatDateTime(dateStr) {
-	var date = new Date(dateStr);
-	var month = date.getMonth() +  1;
-	var day = pad(date.getDate(),2);
-	var hour = (date.getHours() < 12) ? date.getHours() : date.getHours() - 12;
-	var minutes = date.getMinutes();
-	if (minutes < 10) {
-		minutes = '0' + minutes;
-	}
-	var amOrPm = (date.getHours() < 12) ? "am" : "pm";
-	return day + '/' + pad(month,2) + '/' + date.getFullYear() + ' ' + hour + ':' + minutes + amOrPm;
 }
 
 function remove(id){

@@ -1,33 +1,37 @@
 <div class="row">
 	<div class="col s12">
 		<ul class="tabs tabs-fixed-width">
-			<li class="tab disabled"><a href="#" class="active">Retos del día</a></li>
+			<li class="tab disabled"><a href="#" class="active">Abiertos</a></li>
 			<li class="tab"><a href="#" onclick="apretaste.send({command: 'RETOS DONE'})">Completados</a></li>
 			<li class="tab"><a href="#" onclick="apretaste.send({command: 'RETOS AYUDA'})">Ayuda</a></li>
 		</ul>
 	</div>
 </div>
+
 <div class="row">
 	<div class="col s12">
 		<% for(var i in challenges) { var item = challenges[i]; %>
 			<% if (item.done) { %>
 				<div class="card">
 					<div class="card-content">
-						<p class="message-gray">Ma&ntilde;ana tendr&aacute;s otro reto aqu&iacute;</p>
+						<p class="message-gray">Mañana tendrás otro reto aquí</p>
 					</div>
 				</div>
 			<% } else {%>
 				<div class="card">
-					<div class="card-content">
-						<i class="medium left material-icons"><%= item.icon %></i>
-						<span class="card-title"><%= item.name %></span>
-						<p class="blue-grey-text">Ganar&aacute; <%= formatCredit(item.prize) %></p>
+					<div class="card-content challenge">
+						<ul class="collection one-line challenge">
+							<li class="collection-item avatar">
+								<i class="circle material-icons"><%= item.icon %></i>
+								<span class="title"><%= item.name %></span>
+							</li>
+						</ul>
 					</div>
 					<div class="card-action grey lighten-4">
-						<% if(!item.done) { %>
-							<a class="green-text" href="#" onclick="apretaste.send({command: '<%= item.command %>', data: {seed: (new Date()).getTime()}})">Completar</a>
-							<a class="red-text" href="#" onclick="remove(<%= item.id %>);">Quitar</a>
-						<% } %>
+						<a class="green-text" href="#" onclick="apretaste.send({command: '<%= item.command %>', data: {seed: (new Date()).getTime()}})">Completar</a>
+						<a class="red-text" href="#" onclick="remove(<%= item.id %>);">Quitar</a>
+
+						<span class="chip tiny right"><i class="fas fa-coins"></i> <%= formatCredit(item.prize) %></span>
 					</div>
 				</div>
 			<% } %>
@@ -38,13 +42,10 @@
 <!-- Modal Structure -->
 <div id="skip" class="modal">
 	<div class="modal-content">
-		<h4>¡Cuidado!</h4>
-		<p>¿Está seguro que desea quitar este reto?</p>
+		¿Está seguro que desea eliminar este reto?
 	</div>
 	<div class="modal-footer">
 		<a href="#!" class="modal-close waves-effect waves-green btn-flat">Cerrar</a>
-		<a href="#!" class="waves-effect waves-green btn-flat" id="remove-action">Quitar</a>
+		<a href="#!" class="waves-effect waves-green red-text btn-flat" id="remove-action">Quitar</a>
 	</div>
 </div>
-
-<input type="hidden" value="<%= serverTime %>" id="serverTime">

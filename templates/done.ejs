@@ -1,7 +1,7 @@
 <div class="row">
 	<div class="col s12">
 		<ul class="tabs tabs-fixed-width">
-			<li class="tab"><a href="#" onclick="apretaste.send({command: 'RETOS OPEN'})">Retos del día</a></li>
+			<li class="tab"><a href="#" onclick="apretaste.send({command: 'RETOS OPEN'})">Abiertos</a></li>
 			<li class="tab disabled"><a href="#" class="active">Completados</a></li>
 			<li class="tab"><a href="#" onclick="apretaste.send({command: 'RETOS AYUDA'})">Ayuda</a></li>
 		</ul>
@@ -12,22 +12,19 @@
 	<div class="col s12">
 		<% if (challenges.length >0) { %>
 			<p>Estos retos fueron completados por usted. Hasta el momento ha ganado <b><%= formatCredit(total) %></b> créditos.</p>
-			<% for(var i in challenges) { var item = challenges[i]; %>
-			<div class="row">
-				<div class="col s12">
-					<div class="card">
-						<div class="card-content">
-							<i class="medium left material-icons"><%= item.icon %></i>
-							<span class="card-title"><%= item.name %></span>
-							<p>Completado el <%= formatDateTime(item.completed) %></p>
-						</div>
-						<div class="card-action grey lighten-4">
-							Ganaste <%= formatCredit(item.earned) %>
-						</div>
-					</div>
-				</div>
-			</div>
-			<% } %>
+
+			<ul class="collection one-line">
+				<% challenges.forEach(function(item) { %>
+					<li class="collection-item avatar">
+						<i class="circle material-icons"><%= item.icon %></i>
+						<span class="title"><%= item.name %></span>
+						<p>
+							<span class="chip tiny clear spaced"><i class="fas fa-calendar"></i> <%= moment(item.completed).format('D [de] MMMM [del] YYYY, h:mm A') %></span>
+							<span class="chip tiny clear"><i class="fas fa-coins"></i> <%= formatCredit(item.earned) %></span>
+						</p>
+					</li>
+				<% }) %>
+			</ul>
 		<% } else {%>
 			<p class="message-gray">Usted aún no ha completado ningún reto.</p>
 		<% } %>
