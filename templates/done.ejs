@@ -16,7 +16,7 @@
 			<ul class="collection one-line">
 				<% challenges.forEach(function(item) { %>
 					<li class="collection-item avatar">
-						<i class="circle material-icons"><%= item.icon %></i>
+						<i class="circle <%= item.icon %>"></i>
 						<span class="title"><%= item.name %></span>
 						<p>
 							<span class="chip tiny clear spaced"><i class="fas fa-calendar"></i> <%= moment(item.completed).format('D [de] MMMM [del] YYYY, h:mm A') %></span>
