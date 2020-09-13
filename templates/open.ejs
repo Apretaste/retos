@@ -25,7 +25,7 @@
 						</ul>
 					</div>
 					<div class="card-action grey lighten-4">
-						<a class="green-text" href="#" onclick="apretaste.send({command: '<%= item.command %>', data: {seed: (new Date()).getTime()}})">Completar</a>
+						<a class="green-text" href="#" onclick="apretaste.send({command: '<%= item.command %>', data: {query:'<%= item.query %>', seed: (new Date()).getTime()}})">Completar</a>
 						<a class="red-text" href="#" onclick="remove(<%= item.id %>);">Quitar</a>
 
 						<span class="chip tiny right"><i class="fas fa-coins"></i> <%= formatCredit(item.prize) %></span>

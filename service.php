@@ -21,7 +21,19 @@ class Service
 		// get list of challenges
 		$challenges = Challenges::getList($request->person->id);
 
-		// send info to the view
+		foreach ($challenges as $challenge) {
+		    $command = $challenge->command;
+		    $query = '';
+		    if (stripos($challenge->command, '/') !== false) {
+		        $command = explode("/", $challenge->command);
+		        $query = trim($command[1]);
+		        $command = trim($command);
+            }
+		    $challenge->command = $command;
+		    $challenge->query = $query;
+        }
+
+        // send info to the view
 		$response->setTemplate('open.ejs', ['challenges' => $challenges]);
 	}
 
