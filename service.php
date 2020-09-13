@@ -26,8 +26,8 @@ class Service
 		    $query = '';
 		    if (stripos($challenge->command, '/') !== false) {
 		        $command = explode("/", $challenge->command);
-		        $query = trim($command[1]);
-		        $command = trim($command);
+		        $query = trim($command[1] ?? '');
+		        $command = trim($command[0]);
             }
 		    $challenge->command = $command;
 		    $challenge->query = $query;
