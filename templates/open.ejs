@@ -6,6 +6,29 @@
 			<li class="tab"><a href="#" onclick="apretaste.send({command: 'RETOS AYUDA'})">Ayuda</a></li>
 		</ul>
 	</div>
+
+	<%
+		var opens = 0;
+
+		for(var i in challenges) {
+			var item = challenges[i];
+			if (!item.done) {
+				opens++;
+			}
+		}
+	%>
+
+	<% if (opens >= 3) { %>
+		<div class="row">
+			<div class="col s12">
+				<div class="message notice">
+					<i class="fas fa-exclamation-triangle"></i>
+					<p>Usted ha alcanzado el máximo de retos. Complete alguno para seguir acumulando retos</p>
+				</div>
+			</div>
+		</div>
+	<% } %>
+
 	<div class="col s12">
 		<% for(var i in challenges) { var item = challenges[i]; %>
 			<% if (item.done) { %>
