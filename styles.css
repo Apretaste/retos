@@ -73,3 +73,38 @@
 	margin-top: 150px;
 	color: gray;
 }
+
+
+/* MESSAGES */
+
+.message {
+	padding: 5px 10px;
+	border-radius: 3px;
+}
+
+.message.danger {
+	color: #e53935;
+	background-color: #ffcdd2;
+}
+
+.message.notice {
+	color: #1565c0;
+	background-color: #bbdefb;
+}
+
+.message.success {
+	color: #1b5e20;
+	background-color: #c8e6c9;
+}
+
+.message i {
+	position: relative;
+	bottom: -5px;
+	float: left;
+}
+
+.message p {
+	margin-left: 25px;
+	margin-top: 0px;
+	margin-bottom: 0px;
+}
