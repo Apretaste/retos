@@ -80,6 +80,7 @@
 .message {
 	padding: 5px 10px;
 	border-radius: 3px;
+	margin-top: 5px;
 }
 
 .message.danger {
